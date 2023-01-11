@@ -42,7 +42,9 @@ config LINKER_LIST_ALIGN
 
 choice
 	prompt "Architecture select"
-	default SANDBOX
+	default ARM if SOC_CPU_ARM || SOC_CPU_ARM64
+	default MIPS if SOC_CPU_MIPS || SOC_CPU_RLX
+	default RISCV if SOC_CPU_RV
 
 config ARC
 	bool "ARC architecture"

@@ -13,7 +13,7 @@ config ARM64
 config ARM64_CRC32
 	bool "Enable support for CRC32 instruction"
 	depends on ARM64
-	default y
+	default n
 	help
 	  ARMv8 implements dedicated crc32 instruction for crc32 calculation.
 	  This is faster than software crc32 calculation. This instruction may
@@ -330,6 +330,21 @@ config CPU_V7R
 	select SYS_ARM_MPU
 	select SYS_CACHE_SHIFT_6
 
+# CPU_V8 implies armv8a aarch32 mode
+config CPU_V8
+	bool
+	select CPU_V7A
+
+config CPU_PXA
+	bool
+	select SYS_CACHE_SHIFT_5
+	imply SYS_ARM_MMU
+
+config CPU_SA1100
+	bool
+	select SYS_CACHE_SHIFT_5
+	imply SYS_ARM_MMU
+
 config SYS_CPU
 	default "arm720t" if CPU_ARM720T
 	default "arm920t" if CPU_ARM920T
@@ -558,7 +573,10 @@ config S5P
 
 choice
 	prompt "Target select"
-	default TARGET_HIKEY
+	default TARGET_SHEIPA_ARM
+
+config TARGET_SHEIPA_ARM
+	bool "Support Sheipa Platform"
 
 config ARCH_AT91
 	bool "Atmel AT91"
@@ -2258,6 +2276,7 @@ source "arch/arm/mach-nexell/Kconfig"
 
 source "arch/arm/mach-npcm/Kconfig"
 
+source "board/realtek/Kconfig"
 source "board/armltd/total_compute/Kconfig"
 source "board/armltd/corstone1000/Kconfig"
 source "board/bosch/shc/Kconfig"
@@ -2308,5 +2327,6 @@ source "board/phytium/pomelo/Kconfig"
 source "board/xen/xenguest_arm64/Kconfig"
 
 source "arch/arm/Kconfig.debug"
+source "arch/arm/Kconfig.formosa"
 
 endmenu

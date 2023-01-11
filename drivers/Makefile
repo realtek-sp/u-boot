@@ -121,6 +121,7 @@ obj-$(CONFIG_MACH_PIC32) += ddr/microchip/
 obj-$(CONFIG_FUZZ) += fuzz/
 obj-$(CONFIG_DM_HWSPINLOCK) += hwspinlock/
 obj-$(CONFIG_DM_RNG) += rng/
+obj-y += otp/
 endif
 
 obj-y += soc/

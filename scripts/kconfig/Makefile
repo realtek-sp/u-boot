@@ -33,6 +33,7 @@ gconfig: $(obj)/gconf
 
 menuconfig: $(obj)/mconf
 	$< $(silent) $(Kconfig)
+	@scripts/createLink.sh
 
 config: $(obj)/conf
 	$< $(silent) --oldaskconfig $(Kconfig)
@@ -49,6 +50,7 @@ build_gconfig: $(obj)/gconf
 build_xconfig: $(obj)/qconf
 
 localyesconfig localmodconfig: $(obj)/conf
+	$(Q)mkdir -p include/config include/generated
 	$(Q)perl $(srctree)/$(src)/streamline_config.pl --$@ $(srctree) $(Kconfig) > .tmp.config
 	$(Q)if [ -f .config ]; then					\
 			cmp -s .tmp.config .config ||			\
