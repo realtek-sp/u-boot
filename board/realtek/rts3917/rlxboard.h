@@ -11,7 +11,7 @@
 #include <generated/autoconf.h>
 #include "bspchip.h"
 
-#define CONFIG_ETHADDR		DE:AD:BE:EF:01:01	/* Ethernet address */
+// #define CONFIG_ETHADDR		DE:AD:BE:EF:01:01	/* Ethernet address */
 
 /* valid baudrates */
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
@@ -68,8 +68,8 @@
 #define CONFIG_BOOTCOMMAND			RTS_BOOTCMD
 #endif
 
-#define CONFIG_DFU_ALT_INFO		"0 ram 0x80400000 0x400000"
-#define CONFIG_DFU_BUFSIZ		"0x400000"
+// #define CONFIG_DFU_ALT_INFO		"0 ram 0x80400000 0x400000"
+// #define CONFIG_DFU_BUFSIZ		"0x400000"
 #define	CONFIG_ENV_OVERWRITE			1
 
 /*
@@ -115,7 +115,7 @@
 #define CONFIG_SYS_MAX_FLASH_SECT	(128)		/* max number of sectors on one chip */
 
 /* The following #defines are needed to get flash environment right */
-#define CONFIG_SYS_MONITOR_BASE		CONFIG_SYS_TEXT_BASE
+#define CONFIG_SYS_MONITOR_BASE		CONFIG_TEXT_BASE
 #ifndef CONFIG_SYS_MONITOR_LEN
 #define CONFIG_SYS_MONITOR_LEN		(128 << 10)
 #endif
@@ -160,16 +160,12 @@
 #endif
 #endif
 
-/* timeout values are in ticks */
-#define CONFIG_SYS_FLASH_ERASE_TOUT	(2 * CONFIG_SYS_HZ) /* Timeout for Flash Erase */
-#define CONFIG_SYS_FLASH_WRITE_TOUT	(2 * CONFIG_SYS_HZ) /* Timeout for Flash Write */
-
 #ifdef CONFIG_ENV_IN_RAM
 #define CONFIG_ENV_IS_NOWHERE		1
 #endif
 
 /* Address and size of Primary Environment Sector	*/
-#define CONFIG_NET_MULTI
+// #define CONFIG_NET_MULTI
 #define CONFIG_MEMSIZE_IN_BYTES
 
 #define CONFIG_SYS_LONGHELP		1
@@ -181,14 +177,14 @@
 /*-----------------------------------------------------------------------
  * uboot Configuration
  */
-#ifdef CONFIG_SYS_TEXT_BASE
-#undef CONFIG_SYS_TEXT_BASE
+#ifdef CONFIG_TEXT_BASE
+#undef CONFIG_TEXT_BASE
 #endif
 #ifdef CONFIG_SELF_EXTRACTING
 #define CONFIG_LZMA
-#define CONFIG_SYS_TEXT_BASE	0x80800000
+#define CONFIG_TEXT_BASE	0x80800000
 #else
-#define CONFIG_SYS_TEXT_BASE	0x82800000
+#define CONFIG_TEXT_BASE	0x82800000
 #endif
 
 /* Support bootm-ing different OSes */

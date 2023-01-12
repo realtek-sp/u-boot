@@ -13,6 +13,59 @@ source "board/realtek/Kconfig.soc"
 
 # Allow defaults in arch-specific code to override any given here
 source "arch/Kconfig"
+menu "Board config"
+
+choice
+	prompt "Chip Selection"
+	help
+	  Select chip type
+
+config BOARD_RTS3917
+	bool "RTS3917"
+	help
+	  Enable option of the IPCam chip RTS3917,
+	  for distinguish with other chip.
+	  it will be a few of chip, so it is
+	  musted.
+endchoice
+
+choice
+	prompt "Hardware Type"
+	default TARGET_FPGA
+	help
+	  Select IC or FPGA
+
+config TARGET_ASIC
+	bool "ASIC"
+	help
+	  Enable option for ASIC,
+	  not for FPGA
+
+config TARGET_FPGA
+	bool "FPGA"
+	help
+	  Enable option for FPGA,
+	  not for ASIC
+endchoice
+
+choice
+	prompt "CPU Clock Setting"
+	default CPU_800M
+	depends on TARGET_ASIC
+	help
+	  Set cpu clock frequency.
+
+config CPU_1000M
+	bool "1000MHZ"
+	help
+	  Set cpu clock to 1000MHz.
+
+config CPU_800M
+	bool "800MHZ"
+	help
+	  Set cpu clock to 800MHz.
+endchoice
+endmenu
 source "board/realtek/Kconfig.board"
 
 menu "General setup"

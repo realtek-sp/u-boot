@@ -1,3 +1,4 @@
+#include <linux/kconfig.h>
 #include <linux/types.h>
 #include <dma.h>
 #include <config.h>

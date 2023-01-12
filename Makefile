@@ -1116,7 +1116,8 @@ endif
 	@touch $@
 
 all: .binman_stamp
-
+	chmod +x $(srctree)/ram_init/generate.sh
+	$(srctree)/ram_init/generate.sh
 ifeq ($(CONFIG_DEPRECATED),y)
 	$(warning "You have deprecated configuration options enabled in your .config! Please check your configuration.")
 endif
