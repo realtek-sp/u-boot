@@ -13,6 +13,7 @@
 #include <bootstage.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+#define TIME_STAMP_CNTCR 0x19220000
 
 #ifndef CONFIG_SYS_HZ_CLOCK
 static inline u32 read_cntfrq(void)
@@ -26,6 +27,7 @@ static inline u32 read_cntfrq(void)
 
 int timer_init(void)
 {
+	writel(0x1, TIME_STAMP_CNTCR);
 	gd->arch.tbl = 0;
 	gd->arch.tbu = 0;
 
