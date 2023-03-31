@@ -79,6 +79,7 @@ struct bd_info;
 #define MMC_MODE_4BIT		BIT(29)
 #define MMC_MODE_1BIT		BIT(28)
 #define MMC_MODE_SPI		BIT(27)
+#define MMC_MODE_HC		BIT(26)
 
 
 #define SD_DATA_4BIT	0x00040000
@@ -88,6 +89,13 @@ struct bd_info;
 
 #define MMC_DATA_READ		1
 #define MMC_DATA_WRITE		2
+
+#define NO_CARD_ERR		-16 /* No SD/MMC card inserted */
+#define UNUSABLE_ERR		-17 /* Unusable Card */
+#define COMM_ERR		-18 /* Communications Error */
+#define TIMEOUT			-19
+#define IN_PROGRESS		-20 /* operation is in progress */
+#define SWITCH_ERR		-21 /* Card reports failure to switch mode */
 
 #define MMC_CMD_GO_IDLE_STATE		0
 #define MMC_CMD_SEND_OP_COND		1

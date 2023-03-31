@@ -16,6 +16,7 @@
 #include "bspchip.h"
 #include "ddr_def.h"
 #include <otp/rts_otp.h>
+#include <rts_mmc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 #define get_val(addr)		REG32(addr)
@@ -304,4 +305,20 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	return 0;
 }
 #endif
+#endif
+
+#if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(MMC_RTS)
+static const struct rts_mmc_plat rts_mmc0_plat = {
+	.base_addr = RTS_MMC_BASEADDR,
+	.cfg.name  = "rtsmmc",
+	.cfg.f_max = RTS_MMC_DUMMY_F_MAX,
+	.cfg.f_min = RTS_MMC_DUMMY_F_MIN,
+	.cfg.b_max = RTS_MMC_MAX_BLOCK_LEN,
+	.cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,
+};
+
+U_BOOT_DRVINFO(rts_mmc0) = {
+	.name = "rts_mmc",
+	.plat = &rts_mmc0_plat,
+};
 #endif
