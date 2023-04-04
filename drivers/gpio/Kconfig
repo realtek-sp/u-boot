@@ -616,4 +616,10 @@ config ADP5585_GPIO
 	help
 	  Support ADP5585 GPIO expander.
 
+config RTS_GPIO
+	bool "Realtek GPIO driver"
+	depends on DM_GPIO
+	select CMD_GPIO
+	help
+	  Support GPIO access on Realtek SoCs.
 endif

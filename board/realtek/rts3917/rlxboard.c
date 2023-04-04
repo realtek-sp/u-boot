@@ -17,6 +17,7 @@
 #include "ddr_def.h"
 #include <otp/rts_otp.h>
 #include <rts_mmc.h>
+#include <rts_gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 #define get_val(addr)		REG32(addr)
@@ -291,6 +292,12 @@ static const struct rts_mmc_plat rts_mmc0_plat = {
 U_BOOT_DRVINFO(rts_mmc0) = {
 	.name = "rts_mmc",
 	.plat = &rts_mmc0_plat,
+};
+#endif
+
+#if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(RTS_GPIO)
+U_BOOT_DRVINFO(rts_gpio) = {
+	.name = "rts_gpio"
 };
 #endif
 
