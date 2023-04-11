@@ -76,6 +76,7 @@ obj-$(CONFIG_PCNET) += pcnet.o
 obj-$(CONFIG_PIC32_ETH) += pic32_mdio.o pic32_eth.o
 obj-$(CONFIG_RENESAS_RAVB) += ravb.o
 obj-$(CONFIG_RTL8139) += rtl8139.o
+obj-$(CONFIG_RTL8168) += rtl8168.o
 obj-$(CONFIG_RTL8169) += rtl8169.o
 obj-$(CONFIG_SH_ETHER) += sh_eth.o
 obj-$(CONFIG_SJA1105) += sja1105.o

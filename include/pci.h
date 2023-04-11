@@ -668,13 +668,14 @@ extern pci_addr_t pci_hose_phys_to_bus(struct pci_controller* hose,
 					 (addr), (flags)), \
 		    (len), (map_flags))
 
-#define pci_phys_to_mem(dev, addr) \
-	pci_phys_to_bus((dev), (addr), PCI_REGION_MEM)
-#define pci_mem_to_phys(dev, addr) \
-	pci_bus_to_phys((dev), (addr), PCI_REGION_MEM)
-#define pci_phys_to_io(dev, addr)  pci_phys_to_bus((dev), (addr), PCI_REGION_IO)
-#define pci_io_to_phys(dev, addr)  pci_bus_to_phys((dev), (addr), PCI_REGION_IO)
-
+/*
+ *#define pci_phys_to_mem(dev, addr) \
+ * 	pci_phys_to_bus((dev), (addr), PCI_REGION_MEM)
+ *#define pci_mem_to_phys(dev, addr) \
+ *	pci_bus_to_phys((dev), (addr), PCI_REGION_MEM)
+ *#define pci_phys_to_io(dev, addr)  pci_phys_to_bus((dev), (addr), PCI_REGION_IO)
+ *cpu_eth_init#define pci_io_to_phys(dev, addr)  pci_bus_to_phys((dev), (addr), PCI_REGION_IO)
+*/
 #define pci_virt_to_mem(dev, addr) \
 	pci_virt_to_bus((dev), (addr), PCI_REGION_MEM)
 #define pci_mem_to_virt(dev, addr, len, map_flags) \
@@ -1470,14 +1471,21 @@ int dm_pci_flr(struct udevice *dev);
 	map_physmem(phys_addr, _len, (map_flags));			\
 })
 
-#define dm_pci_phys_to_mem(dev, addr) \
-	dm_pci_phys_to_bus((dev), (addr), 0, PCI_REGION_TYPE, PCI_REGION_MEM)
-#define dm_pci_mem_to_phys(dev, addr) \
-	dm_pci_bus_to_phys((dev), (addr), 0, PCI_REGION_TYPE, PCI_REGION_MEM)
-#define dm_pci_phys_to_io(dev, addr) \
-	dm_pci_phys_to_bus((dev), (addr), 0, PCI_REGION_TYPE, PCI_REGION_IO)
-#define dm_pci_io_to_phys(dev, addr) \
-	dm_pci_bus_to_phys((dev), (addr), 0, PCI_REGION_TYPE, PCI_REGION_IO)
+/*
+ *#define dm_pci_phys_to_mem(dev, addr) \
+ *	dm_pci_phys_to_bus((dev), (addr), 0, PCI_REGION_TYPE, PCI_REGION_MEM)
+ *#define dm_pci_mem_to_phys(dev, addr) \
+ *	dm_pci_bus_to_phys((dev), (addr), 0, PCI_REGION_TYPE, PCI_REGION_MEM)
+ *#define dm_pci_phys_to_io(dev, addr) \
+ *	dm_pci_phys_to_bus((dev), (addr), 0, PCI_REGION_TYPE, PCI_REGION_IO)
+ *#define dm_pci_io_to_phys(dev, addr) \
+ *	dm_pci_bus_to_phys((dev), (addr), 0, PCI_REGION_TYPE, PCI_REGION_IO)
+ */
+
+#define dm_pci_phys_to_mem(dev, addr) (addr)
+#define dm_pci_mem_to_phys(dev, addr) (addr)
+#define dm_pci_phys_to_io(dev, addr) (addr)
+#define dm_pci_io_to_phys(dev, addr) (addr)
 
 #define dm_pci_virt_to_mem(dev, addr) \
 	dm_pci_virt_to_bus((dev), (addr), PCI_REGION_MEM)

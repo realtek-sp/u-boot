@@ -46,6 +46,7 @@ config BOOTP_SEND_HOSTNAME
 
 config NET_RANDOM_ETHADDR
 	bool "Random ethaddr if unset"
+	default y
 	help
 	  Selecting this will allow the Ethernet interface to function even
 	  when the ethaddr variable for that interface is unset.  In this case,

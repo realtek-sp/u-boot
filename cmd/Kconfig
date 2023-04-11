@@ -1768,6 +1768,7 @@ config CMD_TFTPPUT
 
 config CMD_TFTPSRV
 	bool "tftpsrv"
+	default y
 	depends on CMD_TFTPBOOT
 	help
 	  Act as a TFTP server and boot the first received file
@@ -1844,6 +1845,7 @@ config CMD_MDIO
 
 config CMD_PING
 	bool "ping"
+	default y
 	help
 	  Send ICMP ECHO_REQUEST to network host
 

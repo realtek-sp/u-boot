@@ -11,7 +11,7 @@
 #include <generated/autoconf.h>
 #include "bspchip.h"
 
-// #define CONFIG_ETHADDR		DE:AD:BE:EF:01:01	/* Ethernet address */
+#define CONFIG_ETHADDR		DE:AD:BE:EF:01:01	/* Ethernet address */
 
 /* valid baudrates */
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }

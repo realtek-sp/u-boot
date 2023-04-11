@@ -278,12 +278,6 @@ int board_early_init_r(void)
 }
 #endif
 
-#ifdef CONFIG_RTL8168
-int cpu_eth_init(bd_t *bis)
-{
-	return rtl8168_initialize(bis);
-}
-#endif
 
 #if defined(CONFIG_USB_GADGET)
 #include <usb.h>
@@ -322,3 +316,10 @@ U_BOOT_DRVINFO(rts_mmc0) = {
 	.plat = &rts_mmc0_plat,
 };
 #endif
+
+#if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(RTL8168)
+U_BOOT_DRVINFO(rts_eth) = {
+	.name = "eth_rtl8168",
+};
+#endif
+
