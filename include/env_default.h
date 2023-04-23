@@ -29,6 +29,10 @@ char default_environment[] = {
 const char default_environment[] = {
 #endif
 #ifndef CONFIG_USE_DEFAULT_ENV_FILE
+#ifdef CONFIG_CMD_DFU
+	"dfu_alt_info=0 ram 0x80400000 0x400000"			"\0"
+	"dfu_bufsiz=0x400000"			"\0"
+#endif
 #ifdef	CONFIG_ENV_CALLBACK_LIST_DEFAULT
 	ENV_CALLBACK_VAR "=" CONFIG_ENV_CALLBACK_LIST_DEFAULT "\0"
 #endif

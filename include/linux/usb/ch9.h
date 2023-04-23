@@ -897,6 +897,21 @@ struct usb_ss_container_id_descriptor {
 } __attribute__((packed));
 
 #define USB_DT_USB_SS_CONTN_ID_SIZE	20
+
+/* USB PLATFORM BOS DESCRIPTOR */
+#define	USB_CAP_TYPE_PLAT		5
+
+struct usb_plat_cap_descriptor {
+	__u8  bLength;
+	__u8  bDescriptorType;
+	__u8  bDevCapabilityType;
+	__u8  bReserved;
+	__u8  PlatformCapabilityUUID[16]; /* 128-bit number */
+	__u8  CapabilityData[8]; /* 128-bit number */
+} __attribute__((packed));
+
+#define USB_DT_PLATFORM_CAP_SIZE	28
+
 /*-------------------------------------------------------------------------*/
 
 /* USB_DT_WIRELESS_ENDPOINT_COMP:  companion descriptor associated with

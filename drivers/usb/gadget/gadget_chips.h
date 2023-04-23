@@ -153,6 +153,12 @@
 #define gadget_is_dwc2(g)        0
 #endif
 
+#ifdef CONFIG_REALTEK_USB_DEVICE
+#define gadget_is_rts(g)        (!strcmp("rts_gadget", (g)->name))
+#else
+#define gadget_is_rts(g)        0
+#endif
+
 /**
  * usb_gadget_controller_number - support bcdDevice id convention
  * @gadget: the controller being driven
@@ -214,5 +220,7 @@ static inline int usb_gadget_controller_number(struct usb_gadget *gadget)
 		return 0x26;
 	else if (gadget_is_dwc2(gadget))
 		return 0x27;
+	else if (gadget_is_rts(gadget))
+		return 0x28;
 	return -ENOENT;
 }

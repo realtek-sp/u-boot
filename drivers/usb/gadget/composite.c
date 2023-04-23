@@ -783,9 +783,21 @@ static void composite_setup_complete(struct usb_ep *ep, struct usb_request *req)
 				req->status, req->actual, req->length);
 }
 
+static u8 priv_uuid[16] = {
+	0xDF, 0x60, 0xDD, 0xD8,
+	0x89, 0x45,
+	0xC7, 0x4C,
+	0x9C, 0xD2, 0x65, 0x9D, 0x9E, 0x64, 0x8A, 0x9F,
+};
+
+static u8 priv_capdata[8] = {
+	0x00, 0x00, 0x03, 0x06,
+	0x7e, 0x01, 0x15, 0x00
+};
+
 static int bos_desc(struct usb_composite_dev *cdev)
 {
-	struct usb_ext_cap_descriptor   *usb_ext;
+	struct usb_plat_cap_descriptor   *usb_plat;
 	struct usb_dcd_config_params	dcd_config_params;
 	struct usb_bos_descriptor       *bos = cdev->req->buf;
 
@@ -799,15 +811,16 @@ static int bos_desc(struct usb_composite_dev *cdev)
 	 * A SuperSpeed device shall include the USB2.0 extension descriptor
 	 * and shall support LPM when operating in USB2.0 HS mode.
 	 */
-	usb_ext = cdev->req->buf + le16_to_cpu(bos->wTotalLength);
+	usb_plat = cdev->req->buf + le16_to_cpu(bos->wTotalLength);
 	bos->bNumDeviceCaps++;
 	le16_add_cpu_packed((__le16_packed *)&bos->wTotalLength,
-			    USB_DT_USB_EXT_CAP_SIZE);
-	usb_ext->bLength = USB_DT_USB_EXT_CAP_SIZE;
-	usb_ext->bDescriptorType = USB_DT_DEVICE_CAPABILITY;
-	usb_ext->bDevCapabilityType = USB_CAP_TYPE_EXT;
-	usb_ext->bmAttributes =
-		cpu_to_le32(USB_LPM_SUPPORT | USB_BESL_SUPPORT);
+			    USB_DT_PLATFORM_CAP_SIZE);
+	usb_plat->bLength = USB_DT_PLATFORM_CAP_SIZE;
+	usb_plat->bDescriptorType = USB_DT_DEVICE_CAPABILITY;
+	usb_plat->bDevCapabilityType = USB_CAP_TYPE_PLAT;
+	usb_plat->bReserved = 0;
+	memcpy(usb_plat->PlatformCapabilityUUID, priv_uuid, 16);
+	memcpy(usb_plat->CapabilityData, priv_capdata, 8);
 
 	/*
 	 * The Superspeed USB Capability descriptor shall be implemented
@@ -1051,7 +1064,7 @@ composite_setup(struct usb_gadget *gadget, const struct usb_ctrlrequest *ctrl)
 				cdev->desc.bcdUSB = cpu_to_le16(0x0310);
 				cdev->desc.bMaxPacketSize0 = 9;
 			} else {
-				cdev->desc.bcdUSB = cpu_to_le16(0x0200);
+				cdev->desc.bcdUSB = cpu_to_le16(0x0201);
 			}
 			value = min(w_length, (u16) sizeof cdev->desc);
 			memcpy(req->buf, &cdev->desc, value);
@@ -1087,7 +1100,7 @@ composite_setup(struct usb_gadget *gadget, const struct usb_ctrlrequest *ctrl)
 			 * also issues this request, return for now for
 			 * USB 2.0 connection.
 			 */
-			if (gadget->speed >= USB_SPEED_SUPER) {
+			if (cdev->desc.bcdUSB >= 0x0201) {
 				value = bos_desc(cdev);
 				value = min(w_length, (u16)value);
 			}

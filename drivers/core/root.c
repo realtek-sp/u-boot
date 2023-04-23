@@ -254,7 +254,6 @@ int dm_scan_plat(bool pre_reloc_only)
 	return ret;
 }
 
-#if CONFIG_IS_ENABLED(OF_REAL)
 /**
  * dm_scan_fdt_node() - Scan the device tree and bind drivers for a node
  *
@@ -345,7 +344,6 @@ int dm_extended_scan(bool pre_reloc_only)
 
 	return ret;
 }
-#endif
 
 __weak int dm_scan_other(bool pre_reloc_only)
 {

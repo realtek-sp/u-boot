@@ -17,6 +17,9 @@ menuconfig USB_GADGET
 	bool "USB Gadget Support"
 	depends on DM
 	select DM_USB
+	select REALTEK_USB_PHY
+	select REALTEK_USB_DEVICE
+	select USB_GADGET_DOWNLOAD
 	help
 	   USB is a master/slave protocol, organized with one master
 	   host (such as a PC) controlling up to 127 peripheral devices.
@@ -51,7 +54,7 @@ config USB_GADGET_VENDOR_NUM
 	hex "Vendor ID of the USB device"
 	default 0x1f3a if ARCH_SUNXI
 	default 0x2207 if ARCH_ROCKCHIP
-	default 0x0
+	default 0x0BDA
 	help
 	  Vendor ID of the USB device emulated, reported to the host device.
 	  This is usually the board or SoC vendor's, unless you've registered
@@ -66,9 +69,19 @@ config USB_GADGET_PRODUCT_NUM
 	default 0x320a if ROCKCHIP_RK3229 || ROCKCHIP_RK3288
 	default 0x330a if ROCKCHIP_RK3328
 	default 0x330c if ROCKCHIP_RK3399
-	default 0x0
+	default 0x3917
 	help
 	  Product ID of the USB device emulated, reported to the host device.
+
+config REALTEK_USB_PHY
+	bool "Realtek USB Device phy support"
+	help
+	  This driver supports Realtek USB Device phy driver.
+
+config REALTEK_USB_DEVICE
+	bool "Realtek USB Device support"
+	help
+	  This driver supports Realtek USB Device driver.
 
 config USB_GADGET_ATMEL_USBA
 	bool "Atmel USBA"

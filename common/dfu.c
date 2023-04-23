@@ -20,6 +20,7 @@
 #include <usb.h>
 #include <net.h>
 
+int dfu_done_flag;
 int run_usb_dnl_gadget(int usbctrl_index, char *usb_dnl_gadget)
 {
 	bool dfu_reset = false;
@@ -62,7 +63,7 @@ int run_usb_dnl_gadget(int usbctrl_index, char *usb_dnl_gadget)
 				goto exit;
 		}
 
-		if (ctrlc())
+		if (ctrlc() || dfu_done_flag)
 			goto exit;
 
 		if (dfu_get_defer_flush()) {
@@ -105,6 +106,7 @@ int run_usb_dnl_gadget(int usbctrl_index, char *usb_dnl_gadget)
 		usb_gadget_handle_interrupts(usbctrl_index);
 	}
 exit:
+	dfu_done_flag = 0;
 	g_dnl_unregister();
 	usb_gadget_release(usbctrl_index);
 

@@ -16,6 +16,8 @@
 #include <spi_flash.h>
 #include <linux/usb/composite.h>
 
+extern int dfu_done_flag;
+
 enum dfu_device_type {
 	DFU_DEV_MMC = 1,
 	DFU_DEV_ONENAND,

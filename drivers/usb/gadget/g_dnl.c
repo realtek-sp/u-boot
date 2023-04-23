@@ -58,7 +58,7 @@ static struct usb_device_descriptor device_desc = {
 	.bLength = sizeof device_desc,
 	.bDescriptorType = USB_DT_DEVICE,
 
-	.bcdUSB = __constant_cpu_to_le16(0x0200),
+	.bcdUSB = __constant_cpu_to_le16(0x0201),
 	.bDeviceClass = USB_CLASS_PER_INTERFACE,
 	.bDeviceSubClass = 0, /*0x02:CDC-modem , 0x00:CDC-serial*/
 

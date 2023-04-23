@@ -501,7 +501,9 @@ static int state_dfu_manifest(struct f_dfu *f_dfu,
 		f_dfu->dfu_state = DFU_STATE_dfuIDLE;
 		value = handle_getstatus(req);
 		f_dfu->blk_seq_num = 0;
-		puts("DOWNLOAD ... OK\nCtrl+C to exit ...\n");
+		// puts("DOWNLOAD ... OK\nCtrl+C to exit ...\n");
+		puts("DOWNLOAD ... OK\n");
+		dfu_done_flag = 1;
 		break;
 	case USB_REQ_DFU_GETSTATE:
 		value = handle_getstate(req);

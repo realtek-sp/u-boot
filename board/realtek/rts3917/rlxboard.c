@@ -278,29 +278,6 @@ int board_early_init_r(void)
 }
 #endif
 
-
-#if defined(CONFIG_USB_GADGET)
-#include <usb.h>
-
-#if defined(CONFIG_REALTEK_USB_PHY) && defined(CONFIG_REALTEK_USB_DEVICE)
-#include <usb/rts_udc.h>
-
-int board_usb_init(int index, enum usb_init_type init)
-{
-	printf("%s()\n", __func__);
-
-	rts_usb_phy_init();
-
-	return rts_usb_device_probe();
-}
-
-int board_usb_cleanup(int index, enum usb_init_type init)
-{
-	return 0;
-}
-#endif
-#endif
-
 #if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(MMC_RTS)
 static const struct rts_mmc_plat rts_mmc0_plat = {
 	.base_addr = RTS_MMC_BASEADDR,
@@ -323,3 +300,15 @@ U_BOOT_DRVINFO(rts_eth) = {
 };
 #endif
 
+#if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(REALTEK_USB_DEVICE)
+#include <usb/rts_udc.h>
+static const struct rts_udc_plat rts_udc_plat = {
+	.base_addr = RTS_UDC_BASE,
+	.mc_base_addr = RTS_UDC_MC_BASE,
+};
+
+U_BOOT_DRVINFO(rts_udc) = {
+	.name = "rts_udc",
+	.plat = &rts_udc_plat,
+};
+#endif
