@@ -24,7 +24,7 @@
 
 #include "legacy-mtd-utils.h"
 
-static struct spi_flash *flash;
+struct spi_flash *flash;
 
 /*
  * This function computes the length argument for the erase command.
@@ -382,18 +382,8 @@ static int do_spi_protect(int argc, char *const argv[])
 	loff_t start, len;
 	bool prot = false;
 
-	if (argc != 4)
+	if (argc < 2)
 		return -1;
-
-	if (!str2off(argv[2], &start)) {
-		puts("start sector is not a valid number\n");
-		return 1;
-	}
-
-	if (!str2off(argv[3], &len)) {
-		puts("len is not a valid number\n");
-		return 1;
-	}
 
 	if (strcmp(argv[1], "lock") == 0)
 		prot = true;

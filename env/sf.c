@@ -54,6 +54,11 @@ static int setup_flash_device(struct spi_flash **env_flash)
 	}
 
 	*env_flash = dev_get_uclass_priv(new);
+
+#ifdef CONFIG_RTS_QSPI
+	flash = *env_flash;
+#endif
+
 #else
 	*env_flash = spi_flash_probe(CONFIG_ENV_SPI_BUS, CONFIG_ENV_SPI_CS,
 				     CONFIG_ENV_SPI_MAX_HZ, CONFIG_ENV_SPI_MODE);

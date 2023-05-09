@@ -551,6 +551,54 @@ config ZYNQMP_GQSPI
 	  This option is used to enable ZynqMP QSPI controller driver which
 	  is used to communicate with qspi flash devices.
 
+config RTS_QSPI
+	bool "Realtek QSPI driver"
+	default n
+	help
+	  Enable the Realtek spi nor flash driver.
+	  This driver support spi flash single, dual and quad.
+choice
+	prompt "SPI NOR flash config"
+	depends on RTS_QSPI
+	default NOR_DUAL_CHANNEL
+	help
+	  Set spi nor flash channel
+	  it can set to 1/2/4 channel
+
+config NOR_SINGLE_CHANNEL
+	bool "Single channel"
+	help
+	  Set spi nor flash channel to single
+	  data will be sent by one channel
+
+config NOR_DUAL_CHANNEL
+	bool "Dual channel"
+	help
+	  Set spi nor flash channel to dual
+	  data will be sent by two channel
+
+config NOR_QUAD_CHANNEL
+	bool "Quad channel"
+	depends on !(QFN88_DDR2_512MBIT || QFN88_DDR3_1GBIT)
+	help
+	  Set spi nor flash channel to quad
+	  data will be sent by four channel
+
+config NOR_QPI_MODE
+	bool "QPI mode"
+	depends on !(QFN88_DDR2_512MBIT || QFN88_DDR3_1GBIT)
+	help
+	  Set spi nor flash channel to qpi
+
+config NOR_DTR_MODE
+	bool "DTR mode"
+	depends on !(QFN88_DDR2_512MBIT || QFN88_DDR3_1GBIT)
+	help
+	  Set spi nor flash channel to dtr
+
+	  Set spi nor flash channel to dtr
+endchoice
+
 endif # if DM_SPI
 
 config FSL_ESPI

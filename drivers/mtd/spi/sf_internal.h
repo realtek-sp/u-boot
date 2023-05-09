@@ -16,6 +16,48 @@
 #define SPI_NOR_MAX_ID_LEN	6
 #define SPI_NOR_MAX_ADDR_WIDTH	4
 
+/* QPI commands */
+#define CMD_ENTER_QPI_I			0x35
+#define CMD_EXIT_QPI_I			0xF5
+#define CMD_ENTER_QPI_II		0x38
+#define CMD_EXIT_QPI_II			0xFF
+
+/* Write commands */
+#define CMD_WRITE_STATUS		0x01
+#define CMD_PAGE_PROGRAM		0x02
+#define CMD_WRITE_DISABLE		0x04
+#define CMD_WRITE_ENABLE		0x06
+#define CMD_QUAD_PAGE_PROGRAM		0x32
+#define CMD_WRITE_EVCR			0x61
+#define CMD_WRSR_2	0x31	/* Winbond Write status register-2 1 byte */
+#define CMD_WRSR_3	0x11	/* Winbond Write status register-3 1 byte */
+#define CMD_WRITE_STATUS_1	0x01
+#define CMD_WRITE_STATUS_2	0x31
+#define CMD_WRITE_STATUS_3	0x11
+#define CMD_WRITE_EX_READ	0x83
+#define CMD_WRITE_READ_PARAMETER	0xc0
+
+/* Read commands */
+#define CMD_READ_ARRAY_SLOW		0x03
+#define CMD_READ_ARRAY_FAST		0x0b
+#define CMD_READ_DUAL_OUTPUT_FAST	0x3b
+#define CMD_READ_DUAL_IO_FAST		0xbb
+#define CMD_READ_QUAD_OUTPUT_FAST	0x6b
+#define CMD_READ_QUAD_IO_FAST		0xeb
+#define CMD_READ_ID			0x9f
+#define CMD_READ_STATUS		0x05
+#define CMD_READ_CONFIG_MX		0x15
+#define CMD_READ_STATUS1		0x35
+#define CMD_READ_CONFIG			0x15
+#define CMD_FLAG_STATUS			0x70
+#define CMD_READ_EVCR			0x65
+#define CMD_READ_STATUS_1		0x05
+#define CMD_READ_STATUS_2		0x35
+#define CMD_READ_STATUS_3		0x15
+#define CMD_READ_STATUS_4		0x09
+#define CMD_READ_STATUS_5		0x95
+#define CMD_READ_EX_READ		0x81
+
 struct flash_info {
 #if !CONFIG_IS_ENABLED(SPI_FLASH_TINY)
 	char		*name;
@@ -69,6 +111,40 @@ struct flash_info {
 #define SPI_NOR_HAS_SST26LOCK	BIT(15)	/* Flash supports lock/unlock via BPR */
 #define SPI_NOR_OCTAL_READ	BIT(16)	/* Flash supports Octal Read */
 #define SPI_NOR_OCTAL_DTR_READ	BIT(17)	/* Flash supports Octal DTR Read */
+#define SPI_NOR_WR_QUAD_I	BIT(18) /* Flash quad mode WR_I */
+#define SPI_NOR_WR_QUAD_II	BIT(19) /* Flash quad mode WR_II */
+#define SPI_NOR_2IO_READ	BIT(20)	/* 2xIO Read */
+#define SPI_NOR_4IO_READ	BIT(21)	/* 4xIO Read */
+#define SPI_NOR_DTR		BIT(22)	/* DTR Read */
+#define QPI_I			BIT(23)	/* Enter QPI:0x35, Exit QPI:0xF5 */
+#define QPI_II			BIT(24)	/* Enter QPI:0x38, Exit QPI:0xFF */
+
+	u16		reg_flags;
+#define SR_CFG			BIT(0)
+#define SR_3REG			BIT(1)
+#define SR_3REG1		BIT(2)
+#define SR_3REG2		BIT(3)
+#define SR_1			BIT(4)
+#define SR_REG1			BIT(5)
+#define SR_CFG1			BIT(6)
+#define SR_EX_RD_REG2		BIT(7)
+#define SR_RD_REG2		BIT(8)
+	u8		dummy_cycle;
+
+	u8		bp_flags;
+/*
+ * Flash SR has 4 bit fields (BP0-3)
+ * for block protection.
+ */
+#define SPI_NOR_4BIT_BP		BIT(0)
+/*
+ * BP3 is bit 6 of status register.
+ * Must be used with SPI_NOR_4BIT_BP.
+ */
+#define SPI_NOR_BP3_SR_BIT6	BIT(1)
+/* Software write protect */
+#define	SPI_NOR_SWP		BIT(2)
+	u16		reset_flow[4];
 };
 
 extern const struct flash_info spi_nor_ids[];

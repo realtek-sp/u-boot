@@ -143,11 +143,13 @@ config SPI_FLASH_ATMEL
 
 config SPI_FLASH_EON
 	bool "EON SPI flash support"
+	default y
 	help
 	  Add support for various EON SPI flash chips (EN25xxx)
 
 config SPI_FLASH_GIGADEVICE
 	bool "GigaDevice SPI flash support"
+	default y
 	help
 	  Add support for various GigaDevice SPI flash chips (GD25xxx)
 
@@ -158,6 +160,7 @@ config SPI_FLASH_ISSI
 
 config SPI_FLASH_MACRONIX
 	bool "Macronix SPI flash support"
+	default y
 	help
 	  Add support for various Macronix SPI flash chips (MX25Lxxx)
 
@@ -189,27 +192,69 @@ config SPI_FLASH_MT35XU
 
 config SPI_FLASH_SST
 	bool "SST SPI flash support"
+	default y
 	help
 	  Add support for various SST SPI flash chips (SST25xxx)
 
 config SPI_FLASH_WINBOND
 	bool "Winbond SPI flash support"
+	default y
 	help
 	  Add support for various Winbond SPI flash chips (W25xxx)
 
 config SPI_FLASH_XMC
 	bool "XMC SPI flash support"
+	default y
 	help
 	  Add support for various XMC (Wuhan Xinxin Semiconductor
 	  Manufacturing Corp.) SPI flash chips (XM25xxx)
 
 config SPI_FLASH_XTX
 	bool "XTX SPI flash support"
+	default y
 	help
 	  Add support for various XTX (XTX Technology Limited)
 	  SPI flash chips (XT25xxx).
 
+config SPI_FLASH_FM
+	bool "FM SPI flash support"
+	default y
+	help
+	  Add support for various FM SPI flash chips (FM25xxx)
+
+config SPI_FLASH_PUYA
+	bool "PUYA SPI flash support"
+	default y
+	help
+	  Add support for various PUYA SPI flash chips (P25xxx)
+
+config SPI_FLASH_NM
+	bool "NM SPI flash support"
+	default y
+	help
+	  Add support for various NM SPI flash chips (NM25xxx)
+
+config SPI_FLASH_XD
+	bool "XD SPI flash support"
+	default y
+	help
+	  Add support for various XD SPI flash chips (XD25xxx)
+
+config SPI_FLASH_ZBIT
+	bool "ZBIT SPI flash support"
+	default y
+	help
+	  Add support for various ZBit SPI flash chips (ZB25xxx)
 endif
+
+config SPI_FLASH_USE_SWP
+	bool "SPI flash support SWP"
+	depends on RTS_QSPI
+	default y
+	help
+          Enable the SWP support for the SPI flash.
+
+	  If no use, say N
 
 config SPI_FLASH_USE_4K_SECTORS
 	bool "Use small 4096 B erase sectors"

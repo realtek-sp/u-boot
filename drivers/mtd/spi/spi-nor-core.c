@@ -1069,6 +1069,76 @@ static int spansion_erase_non_uniform(struct spi_nor *nor, u32 addr,
 }
 #endif
 
+#ifdef CONFIG_SPI_FLASH_USE_SWP
+int spi_flash_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+{
+	u8 status_old, status_new;
+	u8 mask = nor->bp_mask;
+
+	status_old = read_sr(nor);
+	if (status_old < 0)
+		return status_old;
+
+	status_new = (status_old & ~mask) | mask;
+
+	write_enable(nor);
+	write_sr(nor, status_new);
+	write_disable(nor);
+
+	status_new = read_sr(nor);
+	printf("flash lock: changed status reg %#x to %#x\n",
+	       status_old, status_new);
+
+	return 0;
+}
+
+int spi_flash_unlock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+{
+	u8 status_old, status_new;
+	u8 mask = nor->bp_mask;
+
+	status_old = read_sr(nor);
+	if (status_old < 0)
+		return status_old;
+
+	status_new = status_old & ~mask;
+	write_enable(nor);
+	write_sr(nor, status_new);
+	write_disable(nor);
+
+	status_new = read_sr(nor);
+	printf("flash unlock: changed status reg %#x to %#x\n",
+	       status_old, status_new);
+
+	return 0;
+}
+#else
+int spi_flash_lock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+{
+	return 0;
+}
+
+int spi_flash_unlock(struct spi_nor *nor, loff_t ofs, uint64_t len)
+{
+	return 0;
+}
+#endif
+
+int spi_flash_is_unlocked(struct spi_nor *nor, loff_t ofs, uint64_t len)
+{
+	u8 status;
+	u8 mask = nor->bp_mask;
+	int ret;
+
+	status = read_sr(nor);
+	if (status < 0)
+		return status;
+
+	ret = !(status & mask);
+
+	return ret;
+}
+
 #if defined(CONFIG_SPI_FLASH_STMICRO) || defined(CONFIG_SPI_FLASH_SST)
 /* Write status register and ensure bits in mask match written values */
 static int write_sr_and_check(struct spi_nor *nor, u8 status_new, u8 mask)
@@ -2691,10 +2761,31 @@ static void spi_nor_default_init_fixups(struct spi_nor *nor)
 		nor->fixups->default_init(nor);
 }
 
+static int spi_flash_cmd_read_status(struct spi_nor *nor, u8 *sr, u8 cmd)
+{
+	int ret;
+
+	ret = nor->read_reg(nor, cmd, sr, 4);
+
+	return ret;
+}
+
+static int spi_flash_cmd_write_status(struct spi_nor *nor,
+				      u16 sr, u8 cmd, u8 data_len)
+{
+	int ret;
+
+	write_enable(nor);
+	ret = nor->write_reg(nor, cmd, &sr, data_len);
+
+	return ret;
+}
+
 static int spi_nor_init_params(struct spi_nor *nor,
 			       const struct flash_info *info,
 			       struct spi_nor_flash_parameter *params)
 {
+	u32 jedec = info->id[0] << 16 | info->id[1] << 8 | info->id[2];
 	/* Set legacy flash parameters as default. */
 	memset(params, 0, sizeof(*params));
 
@@ -2707,7 +2798,7 @@ static int spi_nor_init_params(struct spi_nor *nor,
 		params->hwcaps.mask |= SNOR_HWCAPS_READ_FAST;
 
 		/* Mask out Fast Read if not requested at DT instantiation. */
-#if CONFIG_IS_ENABLED(DM_SPI)
+#if CONFIG_IS_ENABLED(DM_SPI) && CONFIG_IS_ENABLED(OF_CONTROL)
 		if (!ofnode_read_bool(dev_ofnode(nor->spi->dev),
 				      "m25p,fast-read"))
 			params->hwcaps.mask &= ~SNOR_HWCAPS_READ_FAST;
@@ -2757,6 +2848,112 @@ static int spi_nor_init_params(struct spi_nor *nor,
 	params->hwcaps.mask |= SNOR_HWCAPS_PP;
 	spi_nor_set_pp_settings(&params->page_programs[SNOR_CMD_PP],
 				SPINOR_OP_PP, SNOR_PROTO_1_1_1);
+
+	if (info->flags & SPI_NOR_WR_QUAD_II) {
+		params->hwcaps.mask |= SNOR_HWCAPS_PP_1_4_4;
+		spi_nor_set_pp_settings(&params->page_programs[SNOR_CMD_PP_1_4_4],
+			SPINOR_OP_PP_1_4_4, SNOR_PROTO_1_4_4);
+	}
+
+	if (info->flags & SPI_NOR_WR_QUAD_I) {
+		params->hwcaps.mask |= SNOR_HWCAPS_PP_1_1_4;
+		spi_nor_set_pp_settings(&params->page_programs[SNOR_CMD_PP_1_1_4],
+			SPINOR_OP_PP_1_1_4, SNOR_PROTO_1_1_4);
+	}
+
+	if (info->reg_flags & SR_CFG) {
+#if defined CONFIG_NOR_QUAD_CHANNEL || defined CONFIG_NOR_QPI_MODE
+		if (jedec == 0xc22019 /*MX25L25645G*/)
+			spi_flash_cmd_write_status(nor, 0xc040, CMD_WRITE_STATUS_1, 2);
+		else
+			spi_flash_cmd_write_status(nor, 0x0740, CMD_WRITE_STATUS_1, 2);
+#elif defined CONFIG_NOR_DTR_MODE
+		if (jedec == 0xc22019 /*MX25L25645G*/ ||
+		    jedec == 0xc22018 /* MX25L12845G */)
+			spi_flash_cmd_write_status(nor, 0xc340, CMD_WRITE_STATUS_1, 2);
+		else
+			spi_flash_cmd_write_status(nor, 0x0740, CMD_WRITE_STATUS_1, 2);
+#else
+		spi_flash_cmd_write_status(nor, 0x0700, CMD_WRITE_STATUS_1, 2);
+#endif
+	} else if (info->reg_flags & SR_CFG1) {
+#if defined CONFIG_NOR_QUAD_CHANNEL || defined CONFIG_NOR_QPI_MODE
+		spi_flash_cmd_write_status(nor, 0x0040, CMD_WRITE_STATUS_1, 2);
+#else
+		spi_flash_cmd_write_status(nor, 0x0000, CMD_WRITE_STATUS_1, 2);
+#endif
+	} else if (info->reg_flags & SR_3REG) {
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_1, 1);
+#if defined CONFIG_NOR_QUAD_CHANNEL || defined CONFIG_NOR_QPI_MODE || defined CONFIG_NOR_DTR_MODE
+		if (jedec == 0x522118 /*NM25Q128EVB*/ ||
+		    jedec == 0x522217 /*NM25Q64EVB*/)
+			spi_flash_cmd_write_status(nor, 0x04, CMD_WRITE_STATUS_2, 1);
+		else
+			spi_flash_cmd_write_status(nor, 0x02, CMD_WRITE_STATUS_2, 1);
+#else
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_2, 1);
+#endif
+		if (info->id[0] == 0x85 /*PUYA devices*/||
+		    jedec == 0x522118 /*NM25Q128EVB*/ ||
+		    jedec == 0x522217 /*NM25Q64EVB*/)
+			/*
+			 * P25Q128H device need to set the highest
+			 * driving strength,
+			 * or has some errors when in mtd_test.
+			 */
+			spi_flash_cmd_write_status(nor, 0x40, CMD_WRITE_STATUS_3, 1);
+		else if (jedec == 0x204017 /*XM25Q64C*/ ||
+			 jedec == 0x204018 /*XM25Q128C*/ ||
+			 jedec == 0x204019 /*XM25Q256C*/)
+			spi_flash_cmd_write_status(nor, 0x20, CMD_WRITE_STATUS_3, 1);
+		else if (jedec == 0xc84018 /*GD25Q128C*/)
+			spi_flash_cmd_write_status(nor, 0x60, CMD_WRITE_STATUS_3, 1);
+		else
+			spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_3, 1);
+	} else if (info->reg_flags & SR_3REG1) {
+#if defined CONFIG_NOR_QUAD_CHANNEL || defined CONFIG_NOR_QPI_MODE
+		spi_flash_cmd_write_status(nor, 0x40, CMD_WRITE_STATUS_1, 1);
+#else
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_1, 1);
+#endif
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_2, 1);
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_3, 1);
+	} else if (info->reg_flags & SR_3REG2) {
+#if defined CONFIG_NOR_QUAD_CHANNEL || defined CONFIG_NOR_QPI_MODE
+		spi_flash_cmd_write_status(nor, 0x0200, CMD_WRITE_STATUS_1, 2);
+		if (jedec == 0xa14018 /*FM25Q128*/)
+			spi_flash_cmd_write_status(nor, 0x22, CMD_WRITE_STATUS_2, 1);
+		else
+			spi_flash_cmd_write_status(nor, 0x02, CMD_WRITE_STATUS_2, 1);
+#else
+		spi_flash_cmd_write_status(nor, 0x0000, CMD_WRITE_STATUS_1, 2);
+#endif
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_3, 1);
+	} else if (info->reg_flags & SR_1) {
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_1, 1);
+	} else if (info->reg_flags & SR_REG1) {
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_1, 1);
+	} else if (info->reg_flags & SR_EX_RD_REG2) {
+#if defined CONFIG_NOR_QUAD_CHANNEL || defined CONFIG_NOR_QPI_MODE
+		spi_flash_cmd_write_status(nor, 0x40, CMD_WRITE_STATUS_1, 1);
+#else
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_1, 1);
+#endif
+		spi_flash_cmd_write_status(nor, 0xf0, CMD_WRITE_EX_READ, 1);
+	} else if (info->reg_flags & SR_RD_REG2) {
+#if defined CONFIG_NOR_QUAD_CHANNEL || defined CONFIG_NOR_QPI_MODE
+		spi_flash_cmd_write_status(nor, 0x40, CMD_WRITE_STATUS_1, 1);
+#else
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_1, 1);
+#endif
+		spi_flash_cmd_write_status(nor, 0xc0, CMD_WRITE_READ_PARAMETER, 1);
+	} else {
+#if defined CONFIG_NOR_QUAD_CHANNEL || defined CONFIG_NOR_QPI_MODE
+		spi_flash_cmd_write_status(nor, 0x40, CMD_WRITE_STATUS_1, 1);
+#else
+		spi_flash_cmd_write_status(nor, 0x00, CMD_WRITE_STATUS_1, 1);
+#endif
+	}
 
 	/*
 	 * Since xSPI Page Program opcode is backward compatible with
@@ -3880,6 +4077,7 @@ void spi_nor_set_fixups(struct spi_nor *nor)
 #endif /* SPI_FLASH_MACRONIX */
 }
 
+extern u8 addr_4B_mode;
 int spi_nor_scan(struct spi_nor *nor)
 {
 	struct spi_nor_flash_parameter params;
@@ -3888,6 +4086,7 @@ int spi_nor_scan(struct spi_nor *nor)
 	struct spi_slave *spi = nor->spi;
 	int ret;
 	int cfi_mtd_nb = 0;
+	u8 tmp1, tmp2, tmp3;
 
 #ifdef CONFIG_FLASH_CFI_MTD
 	cfi_mtd_nb = CFI_FLASH_BANKS;
@@ -3959,6 +4158,38 @@ int spi_nor_scan(struct spi_nor *nor)
 	mtd->_read = spi_nor_read;
 	mtd->_write = spi_nor_write;
 
+	addr_4B_mode = 0;
+	nor->bp_mask = SR_BP0 | SR_BP1 | SR_BP2;
+	if (info->bp_flags & SPI_NOR_4BIT_BP) {
+		nor->bp_mask |= SR_BP3;
+		if (info->bp_flags & SPI_NOR_BP3_SR_BIT6)
+			nor->bp_mask |= SR_BP4;
+	}
+
+#ifdef CONFIG_RTS_QSPI
+	switch (JEDEC_MFR(info)) {
+	case SNOR_MFR_GIGADEVICE:
+	case SNOR_MFR_MACRONIX:
+	case SNOR_MFR_WINBOND:
+	case SNOR_MFR_ST:
+	case SNOR_MFI_BY:
+	case SNOR_MFR_EON:
+	case SNOR_MFI_XTX:
+	case SNOR_MFI_FM:
+	case SNOR_MFI_PUYA:
+	case SNOR_MFI_NM:
+	case SNOR_MFI_XD:
+	case SNOR_MFI_ZBIT:
+		nor->flash_lock = spi_flash_lock;
+		nor->flash_unlock = spi_flash_unlock;
+		nor->flash_is_unlocked = spi_flash_is_unlocked;
+		break;
+	default:
+		debug("SF: Lock ops not supported for %02x flash\n",
+		      JEDEC_MFR(info));
+		break;
+	}
+#else
 #if defined(CONFIG_SPI_FLASH_STMICRO) || defined(CONFIG_SPI_FLASH_SST)
 	/* NOR protection support for STmicro/Micron chips and similar */
 	if (JEDEC_MFR(info) == SNOR_MFR_ST ||
@@ -3970,6 +4201,10 @@ int spi_nor_scan(struct spi_nor *nor)
 		nor->flash_is_unlocked = stm_is_unlocked;
 	}
 #endif
+#endif
+
+	/* spi flash lock */
+	spi_flash_lock(nor, 0, 0);
 
 #ifdef CONFIG_SPI_FLASH_SST
 	/*
@@ -4027,6 +4262,7 @@ int spi_nor_scan(struct spi_nor *nor)
 	if (nor->addr_width == 3 && mtd->size > SZ_16M) {
 #ifndef CONFIG_SPI_FLASH_BAR
 		/* enable 4-byte addressing if the device exceeds 16MiB */
+		addr_4B_mode = 1;
 		nor->addr_width = 4;
 		if (JEDEC_MFR(info) == SNOR_MFR_SPANSION ||
 		    info->flags & SPI_NOR_4B_OPCODES)
@@ -4057,6 +4293,61 @@ int spi_nor_scan(struct spi_nor *nor)
 	nor->size = mtd->size;
 	nor->erase_size = mtd->erasesize;
 	nor->sector_size = mtd->erasesize;
+
+	/* enable QPI */
+	spi->flags = info->flags;
+	// flash_enable_qpi(spi);
+
+	if ((info->reg_flags & SR_CFG) || (info->reg_flags & SR_CFG1)) {
+		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
+		spi_flash_cmd_read_status(nor, &tmp2, CMD_READ_CONFIG);
+		printf("flash status is %x, %x\n", tmp1, tmp2);
+	}
+
+	if (info->reg_flags & SR_3REG) {
+		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
+		spi_flash_cmd_read_status(nor, &tmp2, CMD_READ_STATUS_2);
+		spi_flash_cmd_read_status(nor, &tmp3, CMD_READ_STATUS_3);
+		printf("flash status is %x, %x, %x\n", tmp1, tmp2, tmp3);
+	}
+
+	if (info->reg_flags & SR_3REG1) {
+		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
+		spi_flash_cmd_read_status(nor, &tmp2, CMD_READ_STATUS_2);
+		spi_flash_cmd_read_status(nor, &tmp3, CMD_READ_STATUS_3);
+		printf("flash status is %x, %x, %x\n", tmp1, tmp2, tmp3);
+	}
+
+	if (info->reg_flags & SR_3REG2) {
+		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
+		spi_flash_cmd_read_status(nor, &tmp2, CMD_READ_STATUS_2);
+		/*read driver strength only for w25q64jv.*/
+		spi_flash_cmd_read_status(nor, &tmp3, CMD_READ_STATUS_3);
+		printf("flash status is %x, %x, %x\n", tmp1, tmp2, tmp3);
+	}
+
+	if (info->reg_flags & SR_1) {
+		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
+		printf("flash status is %x\n", tmp1);
+	}
+
+	if (info->reg_flags & SR_REG1) {
+		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
+		spi_flash_cmd_read_status(nor, &tmp2, CMD_READ_STATUS_4);
+		spi_flash_cmd_read_status(nor, &tmp3, CMD_READ_STATUS_5);
+		printf("flash status is %x, %x, %x\n", tmp1, tmp2, tmp3);
+	}
+
+	if (info->reg_flags & SR_EX_RD_REG2) {
+		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
+		spi_flash_cmd_read_status(nor, &tmp2, CMD_READ_EX_READ);
+		printf("flash status is %x, %x\n", tmp1, tmp2);
+	}
+
+	if (info->reg_flags & SR_RD_REG2) {
+		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
+		printf("flash status is %x\n", tmp1);
+	}
 
 #ifndef CONFIG_SPL_BUILD
 	printf("SF: Detected %s with page size ", nor->name);

@@ -30,6 +30,14 @@
 #define SNOR_MFR_SST		CFI_MFR_SST
 #define SNOR_MFR_WINBOND	0xef /* Also used by some Spansion */
 #define SNOR_MFR_CYPRESS	0x34
+#define SNOR_MFR_EON		0x1c
+#define SNOR_MFI_BY		0x68
+#define SNOR_MFI_XTX		0x0b
+#define SNOR_MFI_FM		0xa1
+#define SNOR_MFI_PUYA		0x85
+#define SNOR_MFI_NM		0x52
+#define SNOR_MFI_XD		0xd8
+#define SNOR_MFI_ZBIT		0x5e
 
 /*
  * Note on opcode nomenclature: some opcodes have a format like
@@ -161,6 +169,8 @@
 #define SR_BP0			BIT(2)	/* Block protect 0 */
 #define SR_BP1			BIT(3)	/* Block protect 1 */
 #define SR_BP2			BIT(4)	/* Block protect 2 */
+#define SR_BP3			BIT(5)  /* Block protect 3 */
+#define SR_BP4			BIT(6)  /* Block protect 4 */
 #define SR_TB			BIT(5)	/* Top/Bottom protect */
 #define SR_SRWD			BIT(7)	/* SR write protect */
 /* Spansion/Cypress specific status bits */
@@ -558,6 +568,7 @@ struct spi_nor {
 	u8			cmd_buf[SPI_NOR_MAX_CMD_SIZE];
 	enum spi_nor_cmd_ext	cmd_ext_type;
 	struct spi_nor_fixups	*fixups;
+	u8			bp_mask;
 
 	int (*setup)(struct spi_nor *nor, const struct flash_info *info,
 		     const struct spi_nor_flash_parameter *params);

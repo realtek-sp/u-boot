@@ -1083,9 +1083,15 @@ endmenu
 
 menu "Boot media"
 
-config NOR_BOOT
+config RTS_NOR_BOOT
 	bool "Support for booting from NOR flash"
-	depends on NOR
+	select CMD_SF
+	select SPI_FLASH
+	select RTS_QSPI
+	select SPI
+	select DM_SPI
+	select DM_SPI_FLASH
+	select ENV_IS_IN_SPI_FLASH
 	help
 	  Enabling this will make a U-Boot binary that is capable of being
 	  booted via NOR.  In this case we will enable certain pinmux early

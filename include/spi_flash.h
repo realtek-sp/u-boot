@@ -12,6 +12,10 @@
 #include <linux/types.h>
 #include <linux/mtd/spi-nor.h>
 
+#ifdef CONFIG_RTS_QSPI
+extern struct spi_flash *flash;
+#endif
+
 struct udevice;
 
 struct spi_slave;
