@@ -463,6 +463,95 @@ static int initr_env(void)
 	return 0;
 }
 
+#ifdef CONFIG_OF_CONTROL
+static int fdt_node_check_label(const void *fdt, int nodeoffset,
+			      const char *label)
+{
+	const void *prop;
+	int len;
+
+	prop = fdt_getprop(fdt, nodeoffset, "label", &len);
+	if (!prop)
+		return len;
+
+	return !fdt_stringlist_contains(prop, len, label);
+}
+
+static int fdt_node_offset_by_label(const void *fdt, int startoffset,
+				  const char *label)
+{
+	int offset, err;
+
+	/* FIXME: The algorithm here is pretty horrible: we scan each
+	 * property of a node in fdt_node_check_compatible(), then if
+	 * that didn't find what we want, we scan over them again
+	 * making our way to the next node.  Still it's the easiest to
+	 * implement approach; performance can come later.
+	 */
+	for (offset = fdt_next_node(fdt, startoffset, NULL);
+	     offset >= 0;
+	     offset = fdt_next_node(fdt, offset, NULL)) {
+		err = fdt_node_check_label(fdt, offset, label);
+		if ((err < 0) && (err != -FDT_ERR_NOTFOUND))
+			return err;
+		else if (err == 0)
+			return offset;
+	}
+
+	return offset; /* error from fdt_next_node() */
+}
+
+static u32 get_dtb_data_of_offset(const void *data, int len)
+{
+	if (len == 0)
+		return -1;
+
+	if ((len % 4) == 0) {
+		const __be32 *p = data;
+
+		return fdt32_to_cpu(p[0]);
+	}
+	return -1;
+}
+
+static int initr_get_kernel_offset(void)
+{
+	struct fdt_header *working_fdt;
+	int nodeoffset, nodeoffset_s;	/* node offset from libfdt */
+	int offset, len;
+#ifdef CONFIG_RTS_EMMC_BOOT
+	char *pathp = "/soc/mmc_sdhc/partitions";
+#else
+	char *pathp = "/soc/spic/partitions";
+#endif
+	char *prop = "reg";
+	const void *nodep;
+
+	working_fdt = (struct fdt_header *)env_get_hex("fdtcontroladdr", 0);
+	if (!fdt_valid(&working_fdt))
+		return -1;
+
+	nodeoffset = fdt_path_offset(working_fdt, pathp);
+	if (nodeoffset < 0) {
+		printf("libfdt can't find kernel label returned\n");
+		return -1;
+	}
+	nodeoffset_s = fdt_node_offset_by_label(working_fdt,
+						nodeoffset, "kernel");
+	if (!(nodeoffset_s > 0))
+		return -1;
+	nodep = fdt_getprop(working_fdt, nodeoffset_s, prop, &len);
+	if (nodep && len > 0) {
+		offset = get_dtb_data_of_offset(nodep, len);
+		if (offset < 0)
+			return -1;
+	}
+
+	env_set_hex("kernel_offset", offset);
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_SYS_MALLOC_BOOTPARAMS
 static int initr_malloc_bootparams(void)
 {
@@ -713,6 +802,9 @@ static init_fnc_t init_sequence_r[] = {
 	initr_pvblock,
 #endif
 	initr_env,
+#ifdef CONFIG_OF_CONTROL
+	initr_get_kernel_offset,
+#endif
 #ifdef CONFIG_SYS_MALLOC_BOOTPARAMS
 	initr_malloc_bootparams,
 #endif

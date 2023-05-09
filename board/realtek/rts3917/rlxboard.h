@@ -43,7 +43,7 @@
 					"sf read "a" "b" "c";"		\
 					"bootm "a""
 
-#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${dtb_addr}"
+#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${fdtcontroladdr}"
 #else
 #ifdef CONFIG_TARGET_EMULATOR
 #define CONFIG_BOOTCOMMAND		"bootm 0x81000000 - 0x80100000"
@@ -51,7 +51,7 @@
 #ifdef CONFIG_FAST_BOOT
 #define CONFIG_BOOTCOMMAND		"bootm 0xa0000 - 0x80100000"
 #else
-#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${dtb_addr}"
+#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${fdtcontroladdr}"
 #endif
 #endif
 #endif
@@ -59,7 +59,7 @@
 #ifdef CONFIG_FAST_BOOT
 #define CONFIG_BOOTCOMMAND		"bootm 0x100000 - 0x80100000"
 #else
-#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${dtb_addr}"
+#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${fdtcontroladdr}"
 #endif
 #endif
 
