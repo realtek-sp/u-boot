@@ -24,6 +24,9 @@
 #include <linux/kernel.h>
 #include <asm/u-boot.h> /* boot information for Linux kernel */
 #include <vsprintf.h>
+
+int spi_flash_update_external(u32 offset, size_t len, void *buf);
+int spi_flash_read_external(u32 offset, size_t len, void *buf);
 #endif	/* __ASSEMBLY__ */
 
 /* Pull in stuff for the build system */

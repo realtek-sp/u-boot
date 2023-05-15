@@ -1762,6 +1762,7 @@ config CMD_TFTPBOOT
 
 config CMD_TFTPPUT
 	bool "tftp put"
+	default y
 	depends on CMD_TFTPBOOT
 	help
 	  TFTP put command, for uploading files to a server

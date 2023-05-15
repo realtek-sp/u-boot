@@ -30,6 +30,7 @@
 #include <u-boot/sha1.h>
 #include <linux/errno.h>
 #include <asm/io.h>
+#include <dma.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -458,7 +459,24 @@ int image_decomp(int comp, ulong load, ulong image_start, int type,
 		if (load == image_start)
 			break;
 		if (image_len <= unc_len)
+	/*
+	 * Using dma_copy instead of memmove for speed up.
+	 */
+#ifndef USE_HOSTCC
+		{
+			if (image_len%8)
+				image_len = (image_len/8) * 8 + 8;
+			else
+				image_len = image_len;
+			if (image_start & 0x80000000)
+				memmove_wd(load_buf, image_buf, image_len,
+					   CHUNKSZ);
+			else
+				dma_copy(image_start, load, image_len);
+		}
+#else
 			memmove_wd(load_buf, image_buf, image_len, CHUNKSZ);
+#endif
 		else
 			ret = -ENOSPC;
 		break;
@@ -527,7 +545,10 @@ int image_decomp(int comp, ulong load, ulong image_start, int type,
 		return ret;
 
 	*load_end = load + image_len;
-
+#ifndef USE_HOSTCC
+	flush_cache(load, ALIGN(image_len, 128));
+#endif
+	puts("OK\n");
 	return 0;
 }
 

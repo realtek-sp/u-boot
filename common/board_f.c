@@ -540,6 +540,7 @@ static int reserve_fdt(void)
 			gd->fdt_size = ALIGN(fdt_totalsize(gd->fdt_blob), 32);
 
 			gd->start_addr_sp = reserve_stack_aligned(gd->fdt_size);
+			gd->start_addr_sp &= ~0x7f;
 			gd->new_fdt = map_sysmem(gd->start_addr_sp, gd->fdt_size);
 			debug("Reserving %lu Bytes for FDT at: %08lx\n",
 			      gd->fdt_size, gd->start_addr_sp);

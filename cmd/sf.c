@@ -397,6 +397,33 @@ static int do_spi_protect(int argc, char *const argv[])
 	return ret == 0 ? 0 : 1;
 }
 
+int spi_flash_update_external(u32 offset,
+	size_t len, void *buf)
+{
+	int ret;
+
+	flash->flash_unlock(flash, 0, 0);
+	ret = spi_flash_update(flash, offset, len, buf);
+	flash->flash_lock(flash, 0, 0);
+
+	if (ret)
+		return CMD_RET_FAILURE;
+
+	return CMD_RET_SUCCESS;
+}
+
+int spi_flash_read_external(u32 offset,
+	size_t len, void *buf)
+{
+	int ret;
+
+	ret = spi_flash_read(flash, offset, len, buf);
+	if (ret)
+		return CMD_RET_FAILURE;
+
+	return CMD_RET_SUCCESS;
+}
+
 enum {
 	STAGE_ERASE,
 	STAGE_CHECK,

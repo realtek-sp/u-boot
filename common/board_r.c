@@ -464,56 +464,6 @@ static int initr_env(void)
 }
 
 #ifdef CONFIG_OF_CONTROL
-static int fdt_node_check_label(const void *fdt, int nodeoffset,
-			      const char *label)
-{
-	const void *prop;
-	int len;
-
-	prop = fdt_getprop(fdt, nodeoffset, "label", &len);
-	if (!prop)
-		return len;
-
-	return !fdt_stringlist_contains(prop, len, label);
-}
-
-static int fdt_node_offset_by_label(const void *fdt, int startoffset,
-				  const char *label)
-{
-	int offset, err;
-
-	/* FIXME: The algorithm here is pretty horrible: we scan each
-	 * property of a node in fdt_node_check_compatible(), then if
-	 * that didn't find what we want, we scan over them again
-	 * making our way to the next node.  Still it's the easiest to
-	 * implement approach; performance can come later.
-	 */
-	for (offset = fdt_next_node(fdt, startoffset, NULL);
-	     offset >= 0;
-	     offset = fdt_next_node(fdt, offset, NULL)) {
-		err = fdt_node_check_label(fdt, offset, label);
-		if ((err < 0) && (err != -FDT_ERR_NOTFOUND))
-			return err;
-		else if (err == 0)
-			return offset;
-	}
-
-	return offset; /* error from fdt_next_node() */
-}
-
-static u32 get_dtb_data_of_offset(const void *data, int len)
-{
-	if (len == 0)
-		return -1;
-
-	if ((len % 4) == 0) {
-		const __be32 *p = data;
-
-		return fdt32_to_cpu(p[0]);
-	}
-	return -1;
-}
-
 static int initr_get_kernel_offset(void)
 {
 	struct fdt_header *working_fdt;
