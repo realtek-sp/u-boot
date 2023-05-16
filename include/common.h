@@ -25,6 +25,8 @@
 #include <asm/u-boot.h> /* boot information for Linux kernel */
 #include <vsprintf.h>
 
+int exit_spi_qpi_mode(void);
+
 int spi_flash_update_external(u32 offset, size_t len, void *buf);
 int spi_flash_read_external(u32 offset, size_t len, void *buf);
 int update_image_for_nand(ulong offset, size_t length,

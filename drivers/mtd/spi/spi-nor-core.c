@@ -672,6 +672,8 @@ static int set_4byte(struct spi_nor *nor, const struct flash_info *info,
 	case SNOR_MFR_ISSI:
 	case SNOR_MFR_MACRONIX:
 	case SNOR_MFR_WINBOND:
+	case SNOR_MFR_EON:
+	case SNOR_MFR_GIGADEVICE:
 		if (need_wren)
 			write_enable(nor);
 
@@ -2844,6 +2846,57 @@ static int spi_nor_init_params(struct spi_nor *nor,
 					  SNOR_PROTO_8_8_8_DTR);
 	}
 
+	if (info->flags & SPI_NOR_2IO_READ) {
+		if (info->flags & SPI_NOR_DTR) {
+			params->hwcaps.mask |= SNOR_HWCAPS_READ_1_2_2
+						| SNOR_HWCAPS_READ_1_2_2_DTR;
+			spi_nor_set_read_settings(
+					&params->reads[SNOR_CMD_READ_1_2_2],
+					0, 4, SPINOR_OP_READ_1_2_2_DTR,
+					SNOR_PROTO_1_2_2);
+		} else {
+			params->hwcaps.mask |= SNOR_HWCAPS_READ_1_2_2;
+			spi_nor_set_read_settings(
+					&params->reads[SNOR_CMD_READ_1_2_2],
+					0, 4, SPINOR_OP_READ_1_2_2,
+					SNOR_PROTO_1_2_2);
+		}
+	}
+
+	if (info->flags & SPI_NOR_4IO_READ) {
+		if (info->flags & SPI_NOR_DTR) {
+			params->hwcaps.mask |= SNOR_HWCAPS_READ_1_4_4
+						| SNOR_HWCAPS_READ_1_4_4_DTR;
+			spi_nor_set_read_settings(
+					&params->reads[SNOR_CMD_READ_1_4_4_DTR],
+					0, 6, SPINOR_OP_READ_1_4_4_DTR,
+					SNOR_PROTO_1_4_4);
+		} else {
+			params->hwcaps.mask |= SNOR_HWCAPS_READ_1_4_4;
+			spi_nor_set_read_settings(
+					&params->reads[SNOR_CMD_READ_1_4_4],
+					0, 6, SPINOR_OP_READ_1_4_4,
+					SNOR_PROTO_1_4_4);
+		}
+	}
+
+	/* QPI mode (4IO) */
+	if ((info->flags & QPI_I) || (info->flags & QPI_II)) {
+		if (info->flags & SPI_NOR_4IO_READ) {
+			params->hwcaps.mask |= SNOR_HWCAPS_READ_4_4_4;
+			spi_nor_set_read_settings(
+					&params->reads[SNOR_CMD_READ_4_4_4],
+					0, 4, SPINOR_OP_READ_1_4_4,
+					SNOR_PROTO_4_4_4);
+		} else {
+			params->hwcaps.mask |= SNOR_HWCAPS_READ_4_4_4;
+			spi_nor_set_read_settings(
+					&params->reads[SNOR_CMD_READ_4_4_4],
+					0, 4, SPINOR_OP_READ_FAST,
+					SNOR_PROTO_4_4_4);
+		}
+	}
+
 	/* Page Program settings. */
 	params->hwcaps.mask |= SNOR_HWCAPS_PP;
 	spi_nor_set_pp_settings(&params->page_programs[SNOR_CMD_PP],
@@ -2859,6 +2912,14 @@ static int spi_nor_init_params(struct spi_nor *nor,
 		params->hwcaps.mask |= SNOR_HWCAPS_PP_1_1_4;
 		spi_nor_set_pp_settings(&params->page_programs[SNOR_CMD_PP_1_1_4],
 			SPINOR_OP_PP_1_1_4, SNOR_PROTO_1_1_4);
+	}
+
+	/* QPI mode (PP) */
+	if ((info->flags & QPI_I) || (info->flags & QPI_II)) {
+		params->hwcaps.mask |= SNOR_HWCAPS_PP_4_4_4;
+		spi_nor_set_pp_settings(
+			&params->page_programs[SNOR_CMD_PP_4_4_4],
+			SPINOR_OP_PP, SNOR_PROTO_4_4_4);
 	}
 
 	if (info->reg_flags & SR_CFG) {
@@ -3287,7 +3348,7 @@ static int spi_nor_select_read(struct spi_nor *nor,
 	 * Hence we choose to merge both mode and wait state clock cycles
 	 * into the so called dummy clock cycles.
 	 */
-	nor->read_dummy = read->num_mode_clocks + read->num_wait_states;
+	// nor->read_dummy = read->num_mode_clocks + read->num_wait_states;
 	return 0;
 }
 
@@ -3954,7 +4015,7 @@ static int spi_nor_init(struct spi_nor *nor)
 	if (nor->addr_width == 4 &&
 	    !(nor->info->flags & SPI_NOR_OCTAL_DTR_READ) &&
 	    (JEDEC_MFR(nor->info) != SNOR_MFR_SPANSION) &&
-	    !(nor->info->flags & SPI_NOR_4B_OPCODES)) {
+	    (nor->info->flags & SPI_NOR_4B_OPCODES)) {
 		/*
 		 * If the RESET# pin isn't hooked up properly, or the system
 		 * otherwise doesn't perform a reset command in the boot
@@ -4293,10 +4354,9 @@ int spi_nor_scan(struct spi_nor *nor)
 	nor->size = mtd->size;
 	nor->erase_size = mtd->erasesize;
 	nor->sector_size = mtd->erasesize;
-
+	nor->read_dummy = info->dummy_cycle;
 	/* enable QPI */
-	spi->flags = info->flags;
-	// flash_enable_qpi(spi);
+	flash_enable_qpi(nor);
 
 	if ((info->reg_flags & SR_CFG) || (info->reg_flags & SR_CFG1)) {
 		spi_flash_cmd_read_status(nor, &tmp1, CMD_READ_STATUS_1);
@@ -4356,6 +4416,9 @@ int spi_nor_scan(struct spi_nor *nor)
 	print_size(nor->size, "");
 	puts("\n");
 #endif
+
+	spi_flash_set_auto_mode(nor);
+	flash_set_rst_fifo(spi, info->reset_flow);
 
 	return 0;
 }

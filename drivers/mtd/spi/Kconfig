@@ -128,7 +128,7 @@ config SPI_FLASH_BAR
 
 config SPI_FLASH_UNLOCK_ALL
 	bool "Unlock the entire SPI flash on u-boot startup"
-	default y
+	default n
 	help
 	 Some flashes tend to power up with the software write protection
 	 bits set. If this option is set, the whole flash will be unlocked.

@@ -206,4 +206,6 @@ static inline int spi_flash_protect(struct spi_flash *flash, u32 ofs, u32 len,
 		return flash->flash_unlock(flash, ofs, len);
 }
 
+int flash_exit_qpi(struct spi_nor *nor);
+
 #endif /* _SPI_FLASH_H_ */

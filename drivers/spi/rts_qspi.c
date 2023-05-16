@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * SHEIPA SPI controller driver
+ * Realtek SPI controller driver
  *
  * Copyright 2015  Jethro Hsu (jethro@realtek.com)
  *
@@ -12,13 +12,12 @@
 #include <asm/io.h>
 #include <linux/delay.h>
 #include <linux/mtd/spi-nor.h>
-
-/* SPIC FLASH Header */
-#include "rts_qspi.h"
 #include <configs/bspchip.h>
 #include <dm.h>
 #include <dm/uclass-internal.h>
 #include <dm/device-internal.h>
+#include "../mtd/spi/sf_internal.h"
+#include "rts_qspi.h"
 
 #define CMD_ADDR_FORMAT(cmd, addr) (((cmd) & 0x000000ff) | \
 				((addr & 0x000000ff) << 24) | \
@@ -32,8 +31,10 @@
 u8 addr_4B_mode;
 u8 QPIMode;
 
-/* SPIC Driver */
-static u32 spi_flash_setser(struct sheipa_spi *dev, u32 ser_num)
+/*
+ * This function is used to set the ser register.
+ */
+static u32 spi_flash_setser(struct rts_spi *dev, u32 ser_num)
 {
 	struct spi_flash_portmap *spi_flash_map;
 	struct spi_flash_param *spi_flash_para;
@@ -55,7 +56,7 @@ static u32 spi_flash_setser(struct sheipa_spi *dev, u32 ser_num)
 /*
  * This function is used to set the control register.
  */
-static void spi_flash_set_tx_mode(struct sheipa_spi *dev)
+static void spi_flash_set_tx_mode(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -68,7 +69,7 @@ static void spi_flash_set_tx_mode(struct sheipa_spi *dev)
 /*
  * This function is used to set the control register.
  */
-static void spi_flash_set_rx_mode(struct sheipa_spi *dev)
+static void spi_flash_set_rx_mode(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -81,12 +82,12 @@ static void spi_flash_set_rx_mode(struct sheipa_spi *dev)
 /*
  * This function is used to set the ctrlr1 controller.
  */
-static u32 spi_flash_setctrlr1(struct sheipa_spi *dev, u32 num_frame)
+static u32 spi_flash_setctrlr1(struct rts_spi *dev, u32 num_frame)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
 	spi_flash_map = dev->regs;
-	// spi_flash_wait_busy(dev);
+
 	if (num_frame > MAX_NDF) {
 		return -ENODATA;
 	} else {
@@ -96,12 +97,12 @@ static u32 spi_flash_setctrlr1(struct sheipa_spi *dev, u32 num_frame)
 }
 
 /*
- * This function is used to set the ctrlr1 controller.
+ * This function is used to set the dr controller.
  */
-static u32 spi_flash_setdr(struct sheipa_spi *dev,
-				enum spi_flash_dr_number dr_num,
-				u32 data,
-				enum spi_flash_byte_num byte_num)
+static u32 spi_flash_setdr(struct rts_spi *dev,
+			   enum spi_flash_dr_number dr_num,
+			   u32 data,
+			   enum spi_flash_byte_num byte_num)
 {
 	struct spi_flash_portmap *spi_flash_map;
 	u32 wr_data;
@@ -134,15 +135,12 @@ static u32 spi_flash_setdr(struct sheipa_spi *dev,
 /*
  * This function is used to set the tx_ndf controller.
  */
-static u32 spi_flash_settxndf(struct sheipa_spi *dev, u32 num)
+static u32 spi_flash_settxndf(struct rts_spi *dev, u32 num)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
 	spi_flash_map = dev->regs;
 
-/*
- *	printf("tx_ndf is %d\n", num);
- */
 	spi_flash_map->tx_ndf = num;
 
 	return 0;
@@ -151,7 +149,7 @@ static u32 spi_flash_settxndf(struct sheipa_spi *dev, u32 num)
 /*
  * This function is used to set the baud rate register.
  */
-static u32 spi_flash_setbaudr(struct sheipa_spi *dev, u32 baudrate)
+static u32 spi_flash_setbaudr(struct rts_spi *dev, u32 baudrate)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -170,7 +168,7 @@ static u32 spi_flash_setbaudr(struct sheipa_spi *dev, u32 baudrate)
 /*
  * This function is used to set the fast baud rate register for fast read cmd.
  */
-static u32 spi_flash_setfbaudr(struct sheipa_spi *dev, u32 fbaudrate)
+static u32 spi_flash_setfbaudr(struct rts_spi *dev, u32 fbaudrate)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -187,10 +185,9 @@ static u32 spi_flash_setfbaudr(struct sheipa_spi *dev, u32 fbaudrate)
 }
 
 /*
- * This function is used to set the Baudr controller.
+ * This function is used to set the user dummy length register.
  */
-static u32 spi_flash_set_user_dummy_cycle(struct sheipa_spi *dev,
-					  u32 dum_cycle)
+static u32 spi_flash_set_user_dummy_cycle(struct rts_spi *dev, u32 dum_cycle)
 {
 	struct spi_flash_portmap *spi_flash_map;
 	u32 cycle;
@@ -215,7 +212,7 @@ static u32 spi_flash_set_user_dummy_cycle(struct sheipa_spi *dev,
 			SPI_FLASH_USER_LEN_DUM_SHIFT,
 			cycle,
 			SPI_FLASH_USER_LEN_DUM_WIDTH);
-	// set pad delay
+	/* set pad delay */
 	DW_BITS_SET_VAL(spi_flash_map->auto_length,
 			SPI_FLASH_RD_PHY_DUM_SHIFT,
 			DEF_RD_TUNING_DUMMY_CYCLE,
@@ -227,7 +224,7 @@ static u32 spi_flash_set_user_dummy_cycle(struct sheipa_spi *dev,
 /*
  * This function is used to set the Baudr controller.
  */
-static u32 spi_flash_set_dummy_cycle(struct sheipa_spi *dev, u32 dum_cycle)
+static u32 spi_flash_set_auto_dummy_cycle(struct rts_spi *dev, u32 dum_cycle)
 {
 	struct spi_flash_portmap *spi_flash_map;
 	u32 cycle;
@@ -251,7 +248,7 @@ static u32 spi_flash_set_dummy_cycle(struct sheipa_spi *dev, u32 dum_cycle)
 			SPI_FLASH_AUTO_LEN_DUM_SHIFT,
 			cycle,
 			SPI_FLASH_AUTO_LEN_DUM_WIDTH);
-	// set pad delay
+	/* set pad delay */
 	DW_BITS_SET_VAL(spi_flash_map->auto_length,
 			SPI_FLASH_RD_PHY_DUM_SHIFT,
 			DEF_RD_TUNING_DUMMY_CYCLE,
@@ -261,9 +258,9 @@ static u32 spi_flash_set_dummy_cycle(struct sheipa_spi *dev, u32 dum_cycle)
 }
 
 /*
- * This function is used to read the ctrlr1 controller.
+ * This function is used to read the dr register.
  */
-static u32 spi_flash_getdr(struct sheipa_spi *dev,
+static u32 spi_flash_getdr(struct rts_spi *dev,
 			   enum spi_flash_dr_number dr_num,
 			   enum spi_flash_byte_num byte_num)
 {
@@ -294,7 +291,7 @@ static u32 spi_flash_getdr(struct sheipa_spi *dev,
 /*
  * This function is used to wait the spi_flash is not at busy state.
  */
-void spi_flash_wait_busy(struct sheipa_spi *dev)
+void spi_flash_wait_busy(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -313,7 +310,8 @@ void spi_flash_wait_busy(struct sheipa_spi *dev)
 		}
 	}
 }
-void spi_flash_fifo_busy(struct sheipa_spi *dev)
+
+void spi_flash_fifo_busy(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -333,7 +331,7 @@ void spi_flash_fifo_busy(struct sheipa_spi *dev)
  * cmd(1 byte) + address (4 byte) according to
  * enable 4 byte address mode(EN4B)
  */
-static void spi_flash_set_cmd_addr(struct sheipa_spi *dev,
+static void spi_flash_set_cmd_addr(struct rts_spi *dev,
 				   u32 wr_addr, u8 wr_cmd)
 {
 	u32 wr_cmd_addr;
@@ -352,7 +350,7 @@ static void spi_flash_set_cmd_addr(struct sheipa_spi *dev,
 	}
 }
 
-void spi_flash_set_usr_addrlen(struct sheipa_spi *dev)
+void spi_flash_set_usr_addrlen(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -367,7 +365,7 @@ void spi_flash_set_usr_addrlen(struct sheipa_spi *dev)
 			SPI_FLASH_USER_LEN_CMD_WIDTH);
 }
 
-void spi_flash_set_usr_addrlen_init(struct sheipa_spi *dev)
+void spi_flash_set_usr_addrlen_init(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -390,7 +388,7 @@ void spi_flash_set_usr_addrlen_init(struct sheipa_spi *dev)
 /*
  * This function is used to set tx command such as WREN, CE command.
  */
-static void flash_tx_cmd(struct sheipa_spi *dev, u8 cmd)
+static void flash_tx_cmd(struct rts_spi *dev, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -416,7 +414,7 @@ static void flash_tx_cmd(struct sheipa_spi *dev, u8 cmd)
 
 	/* Enable SPI_FLASH */
 	spi_flash_map->ssienr = 1;
-	// set QPI flags
+	/* set QPI flags */
 	if (cmd == CMD_ENTER_QPI_I || cmd == CMD_ENTER_QPI_II)
 		QPIMode = 1;
 
@@ -432,7 +430,7 @@ static void flash_tx_cmd(struct sheipa_spi *dev, u8 cmd)
 /*
  * This function is used to set tx command such as RDID, RDSR command.
  */
-static void flash_rx_cmd(struct sheipa_spi *dev, u8 cmd)
+static void flash_rx_cmd(struct rts_spi *dev, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -443,7 +441,7 @@ static void flash_rx_cmd(struct sheipa_spi *dev, u8 cmd)
 	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
 	/* set ctrlr0: RX_mode */
 	spi_flash_set_rx_mode(dev);
-//	printf("QPIMode =====>    %d\n", QPIMode);
+
 	if (QPIMode == 1)
 		spi_flash_map->ctrlr0 = spi_flash_map->ctrlr0 | QPI_CH;
 	else
@@ -453,13 +451,13 @@ static void flash_rx_cmd(struct sheipa_spi *dev, u8 cmd)
 	/* set flash_cmd: write cmd to fifo */
 	spi_flash_setdr(dev, DR0, cmd, DATA_BYTE);
 	debug("rx cmd, ctrlr0 is %x, usr_len is %x, cmd is %x\n",
-			spi_flash_map->ctrlr0, spi_flash_map->user_length, cmd);
+	      spi_flash_map->ctrlr0, spi_flash_map->user_length, cmd);
 }
 
 /*
  * This function is used to set flash status register.
  */
-static void flash_set_status(struct sheipa_spi *dev, u32 addr, u8 cmd)
+static void flash_set_status(struct rts_spi *dev, u32 addr, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -470,9 +468,8 @@ static void flash_set_status(struct sheipa_spi *dev, u32 addr, u8 cmd)
 	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
 
 #ifdef CONFIG_NOR_DTR_MODE
-	disable_spi_nor_ddr_mode(&(dev->slave));
+	disable_spi_nor_ddr_mode(dev);
 #endif
-
 	/* set ctrlr0: TX mode */
 	spi_flash_set_tx_mode(dev);
 
@@ -496,8 +493,7 @@ static void flash_set_status(struct sheipa_spi *dev, u32 addr, u8 cmd)
 /*
  * This function is used to get flash status for flash_wait_busy.
  */
-
-static u8 flash_get_status(struct sheipa_spi *dev)
+static u8 flash_get_status(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -508,9 +504,8 @@ static u8 flash_get_status(struct sheipa_spi *dev)
 	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
 
 #ifdef CONFIG_NOR_DTR_MODE
-	disable_spi_nor_ddr_mode(&(dev->slave));
+	disable_spi_nor_ddr_mode(dev);
 #endif
-
 	/* Set Ctrlr1; 1 byte data frames */
 	spi_flash_map->ctrlr1 = 1;
 	spi_flash_map->tx_ndf = 0;
@@ -520,7 +515,7 @@ static u8 flash_get_status(struct sheipa_spi *dev)
 			SPI_FLASH_AUTO_LEN_DUM_SHIFT,
 			0,
 			SPI_FLASH_AUTO_LEN_DUM_WIDTH);
-	// set pad delay
+	/* set pad delay */
 #ifdef CONFIG_NOR_DTR_MODE
 	DW_BITS_SET_VAL(spi_flash_map->auto_length, SPI_FLASH_RD_PHY_DUM_SHIFT,
 			2, SPI_FLASH_RD_PHY_DUM_WIDTH);
@@ -538,13 +533,14 @@ static u8 flash_get_status(struct sheipa_spi *dev)
 	/* Enable SPI_FLASH */
 	spi_flash_map->ssienr = 1;
 	spi_flash_wait_busy(dev);
-	// spi_flash_fifo_busy(dev);
+
 	return spi_flash_getdr(dev, DR0, DATA_BYTE);
 }
+
 /*
- * this function is used to read status for mtd.
+ * This function is used to read status for mtd.
  */
-static void flash_read_status(struct sheipa_spi *dev, u8 cmd)
+static void flash_read_status(struct rts_spi *dev, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -554,7 +550,7 @@ static void flash_read_status(struct sheipa_spi *dev, u8 cmd)
 	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
 
 #ifdef CONFIG_NOR_DTR_MODE
-	disable_spi_nor_ddr_mode(&(dev->slave));
+	disable_spi_nor_ddr_mode(dev);
 #endif
 
 	/* Set dummy cycles */
@@ -562,7 +558,7 @@ static void flash_read_status(struct sheipa_spi *dev, u8 cmd)
 			SPI_FLASH_AUTO_LEN_DUM_SHIFT,
 			0,
 			SPI_FLASH_AUTO_LEN_DUM_WIDTH);
-	// set pad delay
+	/* set pad delay */
 #ifdef CONFIG_NOR_DTR_MODE
 	DW_BITS_SET_VAL(spi_flash_map->auto_length,
 			SPI_FLASH_RD_PHY_DUM_SHIFT,
@@ -583,7 +579,7 @@ static void flash_read_status(struct sheipa_spi *dev, u8 cmd)
 			SPI_FLASH_USER_LEN_ADDR_WIDTH);
 }
 
-static void flash_wait_busy(struct sheipa_spi *dev)
+static void flash_wait_busy(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -596,7 +592,7 @@ static void flash_wait_busy(struct sheipa_spi *dev)
 
 	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
 
-	// auto check flash status
+	/* auto check flash status */
 	spi_flash_map->ctrlr1 = 0;
 #ifdef CONFIG_NOR_DTR_MODE
 	spi_flash_map->baudr = AUTO_CHECK_BAUDR;
@@ -611,12 +607,12 @@ static void flash_wait_busy(struct sheipa_spi *dev)
 		spi_flash_map->ctrlr0 = spi_flash_map->ctrlr0 | TIME_OUT_VALUE;
 	}
 
-	//spi_flash_map->imr = spi_flash_map->imr | ACEIM | ACSIM;
-	//spi_flash_map->user_length = 0;
-	//spi_flash_map->tx_ndf = 0;
-	//spi_flash_map->ssienr = 0x3;
+	// spi_flash_map->imr = spi_flash_map->imr | ACEIM | ACSIM;
+	// spi_flash_map->user_length = 0;
+	// spi_flash_map->tx_ndf = 0;
+	// spi_flash_map->ssienr = 0x3;
 
-	//while (1) {
+	// while (1) {
 	//	if (DW_BIT_GET_UNSHIFTED(spi_flash_map->risr,
 	//	SPI_FLASH_RISR_ACEIR)) {
 	//		DW_BIT_SET(spi_flash_map->icr, 0);
@@ -630,32 +626,32 @@ static void flash_wait_busy(struct sheipa_spi *dev)
 	//		// printf("auto check!\n");
 	//		break;
 	//	}
-	//}
+	// }
 
 	spi_flash_map->baudr = baudr_tmp;
 
-	// manual check flash status
+	/* manual check flash status */
 	if (timeout_flag == 1) {
 		u32 time_start = get_timer(0);
 
 		while ((get_timer(time_start) < time0) &&
-						(flash_get_status(dev) & 0x1))
+		       (flash_get_status(dev) & 0x1))
 			;
 	}
 }
 
 /*
- * this function is used to chip erase.
+ * This function is used to chip erase.
  */
-static void flash_chip_erase(struct sheipa_spi *dev, u8 cmd)
+static void flash_chip_erase(struct rts_spi *dev, u8 cmd)
 {
 	flash_tx_cmd(dev, cmd);
 }
 
 /*
- * this function is used to sector erase 4kBi.
+ * This function is used to sector erase 4K bytes.
  */
-static void flash_be_4k_erase(struct sheipa_spi *dev,
+static void flash_be_4k_erase(struct rts_spi *dev,
 			      u32 addr, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
@@ -678,7 +674,10 @@ static void flash_be_4k_erase(struct sheipa_spi *dev,
 	spi_flash_set_usr_addrlen_init(dev);
 }
 
-static void flash_se_erase(struct sheipa_spi *dev, u32 addr, u8 cmd)
+/*
+ * This function is used to bolck erase 64K bytes.
+ */
+static void flash_se_erase(struct rts_spi *dev, u32 addr, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -688,7 +687,7 @@ static void flash_se_erase(struct sheipa_spi *dev, u32 addr, u8 cmd)
 	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
 
 #ifdef CONFIG_NOR_DTR_MODE
-	disable_spi_nor_ddr_mode(&(dev->slave));
+	disable_spi_nor_ddr_mode(dev);
 #endif
 	/* set ctrlr0: TX_mode */
 	DW_BITS_SET_VAL(spi_flash_map->ctrlr0, SPI_FLASH_CTRLR0_TMOD_SHIFT,
@@ -714,29 +713,29 @@ static void flash_se_erase(struct sheipa_spi *dev, u32 addr, u8 cmd)
 	spi_flash_set_usr_addrlen_init(dev);
 }
 
-static void flash_write_disable(struct sheipa_spi *dev)
+static void flash_write_disable(struct rts_spi *dev)
 {
 	flash_tx_cmd(dev, CMD_WRITE_DISABLE);
 }
 
-static void flash_write_enable(struct sheipa_spi *dev)
+static void flash_write_enable(struct rts_spi *dev)
 {
 	flash_tx_cmd(dev, CMD_WRITE_ENABLE);
 }
 
-static void flash_exit_4B_mode(struct sheipa_spi *dev)
+static void flash_exit_4B_mode(struct rts_spi *dev)
 {
 	flash_tx_cmd(dev, CMD_EXIT_4B);
 	addr_4B_mode = 0;
 }
 
-static void flash_enter_4B_mode(struct sheipa_spi *dev)
+static void flash_enter_4B_mode(struct rts_spi *dev)
 {
 	flash_tx_cmd(dev, CMD_ENTER_4B);
 	addr_4B_mode = 1;
 }
 
-static void flash_read_id(struct sheipa_spi *dev, u8 cmd)
+static void flash_read_id(struct rts_spi *dev, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -745,33 +744,32 @@ static void flash_read_id(struct sheipa_spi *dev, u8 cmd)
 	spi_flash_wait_busy(dev);
 
 #ifdef CONFIG_NOR_DTR_MODE
-	disable_spi_nor_ddr_mode(&(dev->slave));
+	disable_spi_nor_ddr_mode(dev);
 #endif
 
 	/* Set Ctrlr1; 3 byte data frames */
 	spi_flash_setctrlr1(dev, 3);
-	// spi_flash_set_user_dummy_cycle(dev, 0);
 
 	DW_BITS_SET_VAL(spi_flash_map->user_length,
 			SPI_FLASH_USER_LEN_DUM_SHIFT,
 			0,
 			SPI_FLASH_USER_LEN_DUM_WIDTH);
-	// set pad delay
+	/* set pad delay */
 	DW_BITS_SET_VAL(spi_flash_map->auto_length,
 			SPI_FLASH_RD_PHY_DUM_SHIFT,
 			2,
 			SPI_FLASH_RD_PHY_DUM_WIDTH);
 
-	// use slow speed to read id
+	/* use slow speed to read id */
 	spi_flash_setbaudr(dev, RD_ID_BAUDR);
 
 	flash_rx_cmd(dev, cmd);
 }
 
 /*
- * this function is used to send single write command.
+ * This function is used to send single write command.
  */
-static void flash_write_cmd(struct sheipa_spi *dev, u32 addr,
+static void flash_write_cmd(struct rts_spi *dev, u32 addr,
 			    enum spi_flash_byte_num byte_num, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
@@ -793,9 +791,9 @@ static void flash_write_cmd(struct sheipa_spi *dev, u32 addr,
 }
 
 /*
- * this function is used to send data to SPIC FIFO.
+ * This function is used to send data to SPIC FIFO.
  */
-static void flash_write_data(struct sheipa_spi *dev, u32 data,
+static void flash_write_data(struct rts_spi *dev, u32 data,
 			     enum spi_flash_byte_num byte_num)
 {
 	if (byte_num == DATA_BYTE)
@@ -807,9 +805,9 @@ static void flash_write_data(struct sheipa_spi *dev, u32 data,
 }
 
 /*
- * this function is used to send single read command.
+ * This function is used to send single read command.
  */
-static void flash_read(struct sheipa_spi *dev, u32 addr,
+static void flash_read(struct rts_spi *dev, u32 addr,
 		       enum spi_flash_byte_num byte_num, u8 cmd)
 {
 	struct spi_flash_portmap *spi_flash_map;
@@ -829,7 +827,7 @@ static void flash_read(struct sheipa_spi *dev, u32 addr,
 			SPI_FLASH_AUTO_LEN_DUM_SHIFT,
 			0,
 			SPI_FLASH_AUTO_LEN_DUM_WIDTH);
-	// set pad delay
+	/* set pad delay */
 	DW_BITS_SET_VAL(spi_flash_map->auto_length,
 			SPI_FLASH_RD_PHY_DUM_SHIFT,
 			DEF_RD_TUNING_DUMMY_CYCLE,
@@ -840,9 +838,9 @@ static void flash_read(struct sheipa_spi *dev, u32 addr,
 }
 
 /*
- * this function is used to send fast read command.
+ * This function is used to send fast read command.
  */
-static void flash_fastread(struct sheipa_spi *dev, u32 addr,
+static void flash_fastread(struct rts_spi *dev, u32 addr,
 			   enum spi_flash_byte_num byte_num,
 			   u32 dummy, u8 cmd)
 {
@@ -868,53 +866,9 @@ static void flash_fastread(struct sheipa_spi *dev, u32 addr,
 }
 
 /*
- * this function is used to send 2-channel write command.
+ * This function is used to send 2-channel read command.
  */
-static u32 flash_writex2(struct sheipa_spi *dev, u32 addr,
-				enum spi_flash_byte_num byte_num,
-				u32 type, u8 cmd)
-{
-	struct spi_flash_portmap *spi_flash_map;
-	u32 init_data;
-
-	spi_flash_map = dev->regs;
-	/* Not support writex2 */
-	if (type == WR_MULTI_NONE) {
-		printf("Not support Writex2 command.\n");
-		return  -EPERM;
-	}
-	/* Disable SPI_FLASH */
-	spi_flash_wait_busy(dev);
-	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
-
-	/* set ctrlr0: TX mode */
-	init_data = spi_flash_map->ctrlr0;
-
-	if (type == WR_DUAL_II)
-		spi_flash_map->ctrlr0 = (init_data & DATA_CH_SINGLE &
-			ADDR_CH_SINGLE & TMOD_SEND) | (DATA_CH_DUAL |
-			ADDR_CH_DUAL);
-	else if (type == WR_DUAL_I) {
-		if (QPIMode == 1)
-			spi_flash_map->ctrlr0 = (init_data & DATA_CH_SINGLE &
-				ADDR_CH_SINGLE & TMOD_SEND) | (QPI_CH);
-		else
-			spi_flash_map->ctrlr0 = (init_data & DATA_CH_SINGLE &
-				ADDR_CH_SINGLE & TMOD_SEND) | (DATA_CH_DUAL);
-	} else {
-		printf("Not support Writex2 command.\n");
-		return -EPERM;
-	}
-	/* set flash cmd + addr and write to fifo */
-	spi_flash_set_cmd_addr(dev, addr, cmd);
-
-	return 0;
-}
-
-/*
- * this function is used to send 2-channel read command.
- */
-static u32 flash_readx2(struct sheipa_spi *dev, u32 addr,
+static u32 flash_readx2(struct rts_spi *dev, u32 addr,
 			enum spi_flash_byte_num byte_num,
 			u32 dummy, u32 type, u8 cmd)
 {
@@ -950,9 +904,9 @@ static u32 flash_readx2(struct sheipa_spi *dev, u32 addr,
 }
 
 /*
- * this function is used to send 4-channel write command.
+ * This function is used to send 4-channel write command.
  */
-static u32 flash_writex4(struct sheipa_spi *dev, u32 addr,
+static u32 flash_writex4(struct rts_spi *dev, u32 addr,
 			 enum spi_flash_byte_num byte_num,
 			 u32 type, u8 cmd)
 {
@@ -971,7 +925,7 @@ static u32 flash_writex4(struct sheipa_spi *dev, u32 addr,
 	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
 
 #ifdef CONFIG_NOR_DTR_MODE
-	disable_spi_nor_ddr_mode(&(dev->slave));
+	disable_spi_nor_ddr_mode(dev);
 #endif
 
 	/* set ctrlr0: TX mode, data_ch, addr_ch */
@@ -996,9 +950,9 @@ static u32 flash_writex4(struct sheipa_spi *dev, u32 addr,
 }
 
 /*
- * this function is used to send 4-channel read command.
+ * This function is used to send 4-channel read command.
  */
-static u32 flash_readx4(struct sheipa_spi *dev, u32 addr,
+static u32 flash_readx4(struct rts_spi *dev, u32 addr,
 			enum spi_flash_byte_num byte_num,
 			u32 dummy, u32 type, u8 cmd)
 {
@@ -1012,7 +966,7 @@ static u32 flash_readx4(struct sheipa_spi *dev, u32 addr,
 	spi_flash_map->ctrlr0 |= USER_MODE | UAR;
 
 #ifdef CONFIG_NOR_DTR_MODE
-	enable_spi_nor_ddr_mode(&(dev->slave));
+	enable_spi_nor_ddr_mode(dev);
 #endif
 
 	/* set ctrlr0: RX_mode */
@@ -1047,9 +1001,9 @@ static u32 flash_readx4(struct sheipa_spi *dev, u32 addr,
 }
 
 /*
- * this function is used to spic and flash initialization.
+ * This function is used to spic and flash initialization.
  */
-static void flash_chip_init(struct sheipa_spi *dev)
+static void flash_chip_init(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -1074,7 +1028,7 @@ static void flash_chip_init(struct sheipa_spi *dev)
 }
 
 /* Enable chip select */
-static void enable_cs_write(struct sheipa_spi *dev)
+static void enable_cs_write(struct rts_spi *dev)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -1087,20 +1041,16 @@ static void enable_cs_write(struct sheipa_spi *dev)
 	spi_flash_wait_busy(dev);
 	spi_flash_fifo_busy(dev);
 
-	// /* Set to 3 bytes address mode */
-	// spi_flash_wait_busy(dev);
-	// spi_flash_set_usr_addrlen(dev);
-
 	flash_wait_busy(dev);
 	spi_flash_set_usr_addrlen_init(dev);
 
 #ifdef CONFIG_NOR_DTR_MODE
-	enable_spi_nor_ddr_mode(&(dev->slave));
+	enable_spi_nor_ddr_mode(dev);
 #endif
 
 }
 
-static void enable_cs_read(struct sheipa_spi *dev, u32 len)
+static void enable_cs_read(struct rts_spi *dev, u32 len)
 {
 	struct spi_flash_portmap *spi_flash_map;
 
@@ -1118,44 +1068,16 @@ static void enable_cs_read(struct sheipa_spi *dev, u32 len)
 	spi_flash_wait_busy(dev);
 
 #ifdef CONFIG_NOR_DTR_MODE
-	enable_spi_nor_ddr_mode(&(dev->slave));
+	enable_spi_nor_ddr_mode(dev);
 #endif
 
 }
 
-static inline void select_extend_op(struct sheipa_spi *dws, u32 addr,
-				    u32 dummy, u32 type, u8 cmd)
-{
-	switch (type) {
-	case RD_QUAD_O:
-	case RD_QUAD_IO:
-		flash_readx4(dws, addr, DATA_WORD, dummy, type, cmd);
-		break;
-	case WR_QUAD_I:
-	case WR_QUAD_II:
-		flash_writex4(dws, addr, DATA_WORD, type, cmd);
-		break;
-	case RD_DUAL_O:
-	case RD_DUAL_IO:
-		flash_readx2(dws, addr, DATA_WORD, dummy, type, cmd);
-		break;
-	/* FIXME: Unverified due to not supported on sheipa platform */
-	case WR_DUAL_I:
-	case WR_DUAL_II:
-		flash_writex2(dws, addr, DATA_WORD, type, cmd);
-		break;
-	default:
-		printf("INFO:No support flash cmd:0x%x\n", cmd);
-		break;
-	}
-}
-
-static void select_op(struct sheipa_spi *dws, u32 addr,
+static void select_op(struct rts_spi *dws, u32 addr,
 		      u32 dummy, u32 type, u8 cmd)
 {
-
 	debug("cmd=0x%x, addr=0x%x, dummy=0x%x, type=0x%x\n",
-		cmd, addr, dummy, type);
+	      cmd, addr, dummy, type);
 
 	switch (cmd) {
 	case CMD_PAGE_PROGRAM:
@@ -1219,6 +1141,8 @@ static void select_op(struct sheipa_spi *dws, u32 addr,
 		break;
 	case SPINOR_OP_READ_1_2_2:
 	case SPINOR_OP_READ_1_2_2_4B:
+	case SPINOR_OP_READ_1_2_2_DTR:
+	case SPINOR_OP_READ_1_2_2_DTR_4B:
 		flash_readx2(dws, addr, DATA_WORD, dummy, RD_DUAL_IO, cmd);
 		break;
 	case SPINOR_OP_READ_1_1_4:
@@ -1227,6 +1151,8 @@ static void select_op(struct sheipa_spi *dws, u32 addr,
 		break;
 	case SPINOR_OP_READ_1_4_4:
 	case SPINOR_OP_READ_1_4_4_4B:
+	case SPINOR_OP_READ_1_4_4_DTR:
+	case SPINOR_OP_READ_1_4_4_DTR_4B:
 		flash_readx4(dws, addr, DATA_WORD, dummy, RD_QUAD_IO, cmd);
 		break;
 	case SPINOR_OP_PP_1_1_4:
@@ -1243,16 +1169,16 @@ static void select_op(struct sheipa_spi *dws, u32 addr,
 	}
 }
 
-static int dw_spi_setup(struct sheipa_spi *dev, unsigned int cs)
+static int dw_spi_setup(struct rts_spi *dev, unsigned int cs)
 {
-	struct spi_flash_param ps_para = { ps_CC_SPI_FLASH_NUM_SLAVES,	 \
-					   ps_CC_SPI_FLASH_TX_FIFO_DEPTH,\
-					   ps_CC_SPI_FLASH_RX_FIFO_DEPTH,\
-					   ps_CC_SPI_FLASH_ID,		 \
-					   ps_CC_SPI_FLASH_DFLT_SCPOL,	 \
-					   ps_CC_SPI_FLASH_DFLT_SCPH,	 \
-					   ps_CC_SPI_FLASH_CLK_PERIOD,	 \
-					   ps_CC_SPI_FLASH_VERSION_ID	 \
+	struct spi_flash_param ps_para = { ps_CC_SPI_FLASH_NUM_SLAVES,
+					   ps_CC_SPI_FLASH_TX_FIFO_DEPTH,
+					   ps_CC_SPI_FLASH_RX_FIFO_DEPTH,
+					   ps_CC_SPI_FLASH_ID,
+					   ps_CC_SPI_FLASH_DFLT_SCPOL,
+					   ps_CC_SPI_FLASH_DFLT_SCPH,
+					   ps_CC_SPI_FLASH_CLK_PERIOD,
+					   ps_CC_SPI_FLASH_VERSION_ID
 					 };
 
 	/* iniitialize Flash_Device_information */
@@ -1267,7 +1193,7 @@ u32 addr_s;
 u8 dummy_s;
 u8 type_s;
 
-static int do_spi_send(struct sheipa_spi *dev,
+static int do_spi_send(struct rts_spi *dev,
 		       const void *tx_data,
 		       unsigned int len,
 		       unsigned long flags)
@@ -1279,20 +1205,23 @@ static int do_spi_send(struct sheipa_spi *dev,
 	u8 *data_addr = (u8 *)tx_data;
 	u32 data;
 
-	debug("do_spi_send, flags is %lx, len is %d\n", flags, len);
+	debug("%s: flags is %lx, len is %d\n", __func__, flags, len);
 
 	if (flags & SPI_XFER_BEGIN) {
 		/* extract cmd and addr */
 		cmd = data_addr[0];
-		if (addr_4B_mode == 1) {
+		if (addr_4B_mode == 1 && len >= 5) {
 			addr = data_addr[1] << 24 | data_addr[2] << 16 |
 					data_addr[3] << 8 | data_addr[4];
 			dummy = (len - 5) * 8;
-		} else {
+		} else if (len >= 4) {
 			addr = data_addr[1] << 16 | data_addr[2] << 8 |
 					data_addr[3];
 			dummy = (len - 4) * 8;
 		}
+
+		if (QPIMode == 1 || (CONFIG_IS_ENABLED(NOR_DTR_MODE)))
+			dummy = dummy / 4;
 
 		if (flags & SPI_XFER_END) {
 			/* Only command to write ex: WREN, BE_4K, SE, and CE  */
@@ -1370,7 +1299,7 @@ static int do_spi_send(struct sheipa_spi *dev,
 				/* Don't do command in final loop */
 				if (i == loop)
 					break;
-				/* Set write enable before any write operation */
+				/* Set write enable before write operation */
 				flash_write_enable(dev);
 				/* re-send command for rest data */
 				select_op(dev, addr_s + (i * FIFO_SIZE),
@@ -1378,7 +1307,7 @@ static int do_spi_send(struct sheipa_spi *dev,
 			}
 
 			if (rem) {
-				/* Set write enable before any write operation */
+				/* Set write enable before write operation */
 				flash_write_enable(dev);
 				/* Re-send command for rest data */
 				select_op(dev, addr_s + (loop * FIFO_SIZE),
@@ -1425,7 +1354,7 @@ static int do_spi_send(struct sheipa_spi *dev,
 
 }
 
-static int do_spi_recv(struct sheipa_spi *dev,
+static int do_spi_recv(struct rts_spi *dev,
 		       const unsigned char *rx_data,
 		       unsigned int len,
 		       unsigned long flags)
@@ -1435,7 +1364,7 @@ static int do_spi_recv(struct sheipa_spi *dev,
 	u8 *data_addr = (u8 *)rx_data;
 	u32 data;
 
-	debug("do_spi_recv flag is %lx, len is %d\n", flags, len);
+	debug("%s: flag is %lx, len is %d\n", __func__, flags, len);
 
 	/* read data for last command */
 	if (!cmd_s) {
@@ -1513,32 +1442,124 @@ static int do_spi_recv(struct sheipa_spi *dev,
 	return 0;
 }
 
+static inline struct rts_spi *to_rts_spi(struct spi_slave *slave)
+{
+	return (struct rts_spi *)(slave->dev->parent->priv_);
+}
+
+/*only in QPI mode*/
+int flash_set_read_para(struct spi_slave *slave, u16 data, u8 cmd, u8 data_len)
+{
+	struct rts_spi *dev = to_rts_spi(slave);
+
+	struct spi_flash_portmap *spi_flash_map = dev->regs;
+	uint8_t cmd_wrsr, rd_data;
+	uint32_t info_tmp;
+
+	info_tmp = spi_flash_map->user_length;
+
+	/* Set flash_cmd: WREN to FIFO*/
+	flash_tx_cmd(dev, CMD_WRITE_ENABLE);
+
+	/* Disable SPI_FLASH*/
+	spi_flash_map->ssienr = 0;
+
+	rd_data = spi_flash_map->ctrlr0;
+
+	/* set ctrlr0: TX mode */
+	spi_flash_set_tx_mode(dev);
+
+	spi_flash_map->ctrlr0 = (rd_data & CLC_CH) | QPI_CH;
+
+	DW_BITS_SET_VAL(spi_flash_map->user_length,
+			SPI_FLASH_USER_LEN_ADDR_SHIFT,
+			data_len,
+			SPI_FLASH_USER_LEN_ADDR_WIDTH);
+
+	/* Set flash_cmd: WRSR to FIFO*/
+	cmd_wrsr = cmd;
+
+	spi_flash_map->dr[DR0].byte = cmd_wrsr;
+
+	spi_flash_map->dr[DR0].byte = data & 0xff;
+
+	spi_flash_map->ssienr = 1;
+	spi_flash_wait_busy(dev);
+
+	spi_flash_map->ssienr = 0;
+	spi_flash_map->user_length = info_tmp;
+	spi_flash_map->ctrlr0 = rd_data;
+
+	flash_wait_busy(dev);
+	return 0;
+}
+
+int flash_enable_qpi(struct spi_nor *nor)
+{
+	struct rts_spi *dev = dev_get_priv(nor->dev->parent);
+	struct spi_slave *slave = nor->spi;
+	int res = 0;
+	u8 cmd = 0;
+
+	if (nor->info->flags & QPI_I)
+		cmd = CMD_ENTER_QPI_I;
+	else if (nor->info->flags & QPI_II)
+		cmd = CMD_ENTER_QPI_II;
+	else
+		return res;
+
+	/* Set flash_cmd: WREN to FIFO*/
+	flash_tx_cmd(dev, CMD_WRITE_ENABLE);
+	flash_tx_cmd(dev, cmd);
+
+	if (nor->info->flags & QPI_II) {
+		if (nor->info->flags & SPI_NOR_4IO_READ)
+			res = flash_set_read_para(slave, 0x20, 0xc0, 1);
+		else
+			res = flash_set_read_para(slave, 0x30, 0xc0, 1);
+	}
+
+	flash_tx_cmd(dev, CMD_WRITE_DISABLE);
+
+	return res;
+}
+
+int flash_exit_qpi(struct spi_nor *nor)
+{
+	struct rts_spi *dev = dev_get_priv(nor->dev->parent);
+	int res = 0;
+	u8 cmd = 0;
+
+	if (nor->info->flags & QPI_I)
+		cmd = CMD_EXIT_QPI_I;
+	else if (nor->info->flags & QPI_II)
+		cmd = CMD_EXIT_QPI_II;
+	else
+		return res;
+
+	flash_tx_cmd(dev, cmd);
+
+	return res;
+}
+
 int flash_flush_rst_fifo(struct spi_slave *slave)
 {
 	struct spi_flash_portmap *spi_flash_map;
-	struct sheipa_spi *dev = to_sheipa_spi(slave);
+	struct rts_spi *dev = to_rts_spi(slave);
 
 	spi_flash_map = dev->regs;
 
-	// flush fifo
+	/* flush fifo */
 	spi_flash_map->ssienr = 0;
 	spi_flash_map->flush_fifo = 2;
 
 	return 0;
 }
 
-int flash_set_rst_fifo_wptr(int reset_flow_cmd_num)
-{
-	u32 addr_temp = SPIC_PGM_FIFO_INIT_ADDR + 0x20;
-
-	REG32(addr_temp) = reset_flow_cmd_num;
-
-	return 0;
-}
-
 int flash_set_rst_fifo(struct spi_slave *slave, const u16 reset_flow[])
 {
-	u32 addr_temp = SPIC_PGM_FIFO_INIT_ADDR;
+	struct rts_spi *dev = to_rts_spi(slave);
+	u32 addr = (u32)dev->rst_regs;
 	int reset_flow_cmd_num = 3;
 	int res = 0;
 	u32 temp;
@@ -1548,18 +1569,102 @@ int flash_set_rst_fifo(struct spi_slave *slave, const u16 reset_flow[])
 	if ((reset_flow[2] & 0xc00) != 0)
 		reset_flow_cmd_num = 4;
 
-	res = flash_set_rst_fifo_wptr(reset_flow_cmd_num);
-
-	if (res)
-		printf("reset flow write reg fail!\n");
+	REG32(addr + SPIC_PGM_FIFO_WPTR) = reset_flow_cmd_num;
 
 	temp = reset_flow[0] | (reset_flow[1] << 16);
-	REG32(addr_temp) = temp;
+	REG32(addr + SPIC_PGM_FIFO_INIT0) = temp;
 	temp = reset_flow[2] | (reset_flow[3] << 16);
-	addr_temp += 0x4;
-	REG32(addr_temp) = temp;
+	REG32(addr + SPIC_PGM_FIFO_INIT1) = temp;
 
 	return res;
+}
+
+int enable_spi_nor_ddr_mode(struct rts_spi *dev)
+{
+	struct spi_flash_portmap *spi_flash_map = dev->regs;
+	u32 ddr_cfg = (u32)dev->rst_regs + SPIC_NOR_DDR_CFG;
+
+	REG32(ddr_cfg) |= DDR_MODE_EN;
+	spi_flash_map->ctrlr0 |= DDR_EN;
+
+	return 0;
+}
+
+int disable_spi_nor_ddr_mode(struct rts_spi *dev)
+{
+	struct spi_flash_portmap *spi_flash_map = dev->regs;
+	u32 ddr_cfg = (u32)dev->rst_regs + SPIC_NOR_DDR_CFG;
+
+	REG32(ddr_cfg) &= (~DDR_MODE_EN);
+	spi_flash_map->ctrlr0 &= (~DDR_EN);
+
+	return 0;
+}
+
+int spi_flash_set_auto_mode(struct spi_nor *nor)
+{
+	struct rts_spi *dev = dev_get_priv(nor->dev->parent);
+	struct spi_flash_portmap *spi_flash_map;
+	u8 autoread_type = FRD_SINGLE_T;
+
+	spi_flash_map = dev->regs;
+
+	/* Disable SPI_FLASH*/
+	spi_flash_wait_busy(dev);
+	spi_flash_fifo_busy(dev);
+
+	if (nor->read_proto == SNOR_PROTO_1_1_1)
+		autoread_type = FRD_SINGLE_T;
+	else if (nor->read_proto == SNOR_PROTO_1_1_2)
+		autoread_type = RD_DUAL_O_T;
+	else if (nor->read_proto == SNOR_PROTO_1_2_2)
+		autoread_type = RD_DUAL_IO_T;
+	else if (nor->read_proto == SNOR_PROTO_1_1_4)
+		autoread_type = RD_QUAD_O_T;
+	else if (nor->read_proto == SNOR_PROTO_1_4_4)
+		autoread_type = RD_QUAD_IO_T;
+	else if (nor->read_proto == SNOR_PROTO_4_4_4)
+		autoread_type = RD_QUAD_IO_T;
+
+	/*Set valid_cmd_reg: auto_cmd*/
+	if (autoread_type & RD_QUAD_IO_T)
+		spi_flash_map->rd_quad_io = nor->read_opcode;
+	else if (autoread_type & RD_QUAD_O_T)
+		spi_flash_map->rd_quad_o = nor->read_opcode;
+	else if (autoread_type & RD_DUAL_IO_T)
+		spi_flash_map->rd_dual_io = nor->read_opcode;
+	else if (autoread_type & RD_DUAL_O_T)
+		spi_flash_map->rd_dual_o = nor->read_opcode;
+	else if (autoread_type & FRD_SINGLE_T)
+		spi_flash_map->rd_fast_single = nor->read_opcode;
+
+	if (addr_4B_mode == 0)
+		DW_BITS_SET_VAL(spi_flash_map->auto_length,
+			SPI_FLASH_USER_LEN_ADDR_SHIFT,
+			3, SPI_FLASH_USER_LEN_ADDR_WIDTH);
+	else
+		DW_BITS_SET_VAL(spi_flash_map->auto_length,
+			SPI_FLASH_USER_LEN_ADDR_SHIFT,
+			4, SPI_FLASH_USER_LEN_ADDR_WIDTH);
+
+	spi_flash_set_auto_dummy_cycle(dev, nor->read_dummy);
+
+#ifdef CONFIG_NOR_DTR_MODE
+	enable_spi_nor_ddr_mode(dev);
+#endif
+	spi_flash_map->valid_cmd = autoread_type | 0x4000;
+
+	/* disable auto write single, send error cmd: 0xeb. */
+	spi_flash_map->wr_single = ERROR_SINGLE_WRITE_CMD;
+
+	/*When QPI mode, auto read channel need to using ctrlr0 config.
+	 *Whenever auto read command channel always using ctrlr0 config.
+	 *Auto read address/data channel using ctrlr0 config when
+	 *enable ctrlr0 bit in valid_cmd or using valid_cmd config.
+	 */
+	if (QPIMode == 1)
+		spi_flash_map->valid_cmd |= CTRLR0_CH_VALID_CMD_EN;
+	return 0;
 }
 
 struct spi_slave *spi_setup_slave_fdt(const void *blob, int slave_node,
@@ -1568,9 +1673,9 @@ struct spi_slave *spi_setup_slave_fdt(const void *blob, int slave_node,
 	return NULL;
 }
 
-static int sheipa_dm_spi_of_to_plat(struct udevice *udev)
+static int rts_dm_spi_of_to_plat(struct udevice *udev)
 {
-	struct sheipa_spi_platdata *plat = udev->plat_;
+	struct rts_spi_platdata *plat = udev->plat_;
 	const void *blob = gd->fdt_blob;
 	int node = dev_of_offset(udev);
 
@@ -1582,23 +1687,26 @@ static int sheipa_dm_spi_of_to_plat(struct udevice *udev)
 	return 0;
 }
 
-static int sheipa_dm_spi_probe(struct udevice *udev)
+static int rts_dm_spi_probe(struct udevice *udev)
 {
-	fdt_addr_t addr;
-	struct sheipa_spi_platdata *plat = dev_get_plat(udev);
-	struct sheipa_spi *priv = dev_get_priv(udev);
+	fdt_addr_t addr, rst_addr;
+	struct rts_spi_platdata *plat = dev_get_plat(udev);
+	struct rts_spi *priv = dev_get_priv(udev);
 
 	if (!plat || !priv)
 		return -ENODEV;
 
 #if !CONFIG_IS_ENABLED(OF_CONTROL)
 	addr = (fdt_addr_t)plat->regs;
+	rst_addr = (fdt_addr_t)plat->rst_regs;
 #else
-	addr = dev_read_addr(udev);
-	if (addr == FDT_ADDR_T_NONE)
+	addr = dev_read_addr_index(udev, 0);
+	rst_addr = dev_read_addr_index(udev, 1);
+	if ((addr == FDT_ADDR_T_NONE) || (rst_addr == FDT_ADDR_T_NONE))
 		return -EINVAL;
 #endif
-	priv->regs = (struct spi_flash_portmap *)addr;
+	priv->regs = (void *)addr;
+	priv->rst_regs = (void *)rst_addr;
 
 	priv->last_transaction_us = timer_get_us();
 	priv->freq = plat->frequency;
@@ -1609,7 +1717,8 @@ static int sheipa_dm_spi_probe(struct udevice *udev)
 #ifdef CONFIG_NOR_DUAL_CHANNEL
 	priv->mode = SPI_TX_DUAL | SPI_RX_DUAL;
 #endif
-#if defined(CONFIG_NOR_QUAD_CHANNEL) ||	defined(CONFIG_NOR_QPI_MODE)
+#if defined(CONFIG_NOR_QUAD_CHANNEL) ||	defined(CONFIG_NOR_QPI_MODE) \
+	|| defined(CONFIG_NOR_DTR_MODE)
 	priv->mode = SPI_TX_QUAD | SPI_RX_QUAD;
 	REG32(XB2_GPIO_REG(0x26c)) = 0x2;
 #endif
@@ -1620,16 +1729,16 @@ static int sheipa_dm_spi_probe(struct udevice *udev)
 	return 0;
 }
 
-static int sheipa_dm_spi_remove(struct udevice *dev)
+static int rts_dm_spi_remove(struct udevice *dev)
 {
 	return -ENODEV;
 }
 
-static int sheipa_flush_fifo(struct udevice *uflash)
+static int rts_flush_fifo(struct udevice *uflash)
 {
 	if (!uflash)
 		return -ENODEV;
-	struct sheipa_spi *priv = dev_get_priv(uflash->parent);
+	struct rts_spi *priv = dev_get_priv(uflash->parent);
 	struct spi_flash_portmap *spi_flash_map = priv->regs;
 
 	spi_flash_map->ssienr = 0;
@@ -1637,13 +1746,13 @@ static int sheipa_flush_fifo(struct udevice *uflash)
 	return 0;
 }
 
-static int sheipa_dm_spi_claim_bus(struct udevice *uflash)
+static int rts_dm_spi_claim_bus(struct udevice *uflash)
 {
-	sheipa_flush_fifo(uflash);
+	rts_flush_fifo(uflash);
 	return 0;
 }
 
-static int sheipa_dm_spi_release_bus(struct udevice *uflash)
+static int rts_dm_spi_release_bus(struct udevice *uflash)
 {
 	return 0;
 }
@@ -1651,8 +1760,8 @@ static int sheipa_dm_spi_release_bus(struct udevice *uflash)
 static void spi_cs_activate(struct udevice *uflash)
 {
 	struct udevice *udev = uflash->parent;
-	struct sheipa_spi_platdata *plat = dev_get_plat(udev);
-	struct sheipa_spi *priv = dev_get_priv(udev);
+	struct rts_spi_platdata *plat = dev_get_plat(udev);
+	struct rts_spi *priv = dev_get_priv(udev);
 
 	debug("activate cs\n");
 
@@ -1669,8 +1778,8 @@ static void spi_cs_activate(struct udevice *uflash)
 static void spi_cs_deactivate(struct udevice *uflash)
 {
 	struct udevice *udev = uflash->parent;
-	struct sheipa_spi_platdata *plat = dev_get_plat(udev);
-	struct sheipa_spi *priv = dev_get_priv(udev);
+	struct rts_spi_platdata *plat = dev_get_plat(udev);
+	struct rts_spi *priv = dev_get_priv(udev);
 	struct spi_flash_portmap *spi_flash_map = priv->regs;
 
 	debug("deactivate cs\n");
@@ -1683,12 +1792,12 @@ static void spi_cs_deactivate(struct udevice *uflash)
 		priv->last_transaction_us = timer_get_us();
 }
 
-static int sheipa_dm_spi_xfer(struct udevice *uflash,
+static int rts_dm_spi_xfer(struct udevice *uflash,
 			      unsigned int bitlen,
 			      const void *dout, void *din, unsigned long flags)
 {
 	struct udevice *udev = dev_get_parent(uflash);
-	struct sheipa_spi *priv = dev_get_priv(udev);
+	struct rts_spi *priv = dev_get_priv(udev);
 	const unsigned char *tx_data = dout;
 	unsigned char *rx_data = din;
 	unsigned int len = bitlen / 8;
@@ -1709,10 +1818,10 @@ static int sheipa_dm_spi_xfer(struct udevice *uflash,
 	return ret;
 }
 
-static int sheipa_dm_spi_set_speed(struct udevice *udev, uint speed)
+static int rts_dm_spi_set_speed(struct udevice *udev, uint speed)
 {
-	struct sheipa_spi_platdata *plat = udev->plat_;
-	struct sheipa_spi *priv = dev_get_priv(udev);
+	struct rts_spi_platdata *plat = udev->plat_;
+	struct rts_spi *priv = dev_get_priv(udev);
 
 	if (speed > plat->frequency)
 		speed = plat->frequency;
@@ -1723,9 +1832,9 @@ static int sheipa_dm_spi_set_speed(struct udevice *udev, uint speed)
 	return 0;
 }
 
-static int sheipa_dm_spi_set_mode(struct udevice *udev, uint mode)
+static int rts_dm_spi_set_mode(struct udevice *udev, uint mode)
 {
-	struct sheipa_spi *priv = dev_get_priv(udev);
+	struct rts_spi *priv = dev_get_priv(udev);
 
 	if (!mode)
 		mode = SPI_TX_QUAD | SPI_RX_QUAD;
@@ -1735,13 +1844,13 @@ static int sheipa_dm_spi_set_mode(struct udevice *udev, uint mode)
 	return 0;
 }
 
-static int sheipa_dm_spi_cs_info(struct udevice *udev,
-				 uint cs, struct spi_cs_info *info)
+static int rts_dm_spi_cs_info(struct udevice *udev,
+			      uint cs, struct spi_cs_info *info)
 {
 	int ret;
 	struct udevice *flash;
 	struct dm_spi_slave_plat *plat = NULL;
-	struct sheipa_spi *priv = dev_get_priv(udev);
+	struct rts_spi *priv = dev_get_priv(udev);
 
 	/* Only allow device activity on CS 0 */
 	if (cs > 0)
@@ -1757,9 +1866,8 @@ static int sheipa_dm_spi_cs_info(struct udevice *udev,
 		device_reparent(flash, udev);
 
 		plat = calloc(1, sizeof(struct dm_spi_slave_plat));
-		if (!plat) {
+		if (!plat)
 			return -ENOMEM;
-		}
 
 		plat->cs = 0;
 		plat->max_hz = 50000000;
@@ -1770,7 +1878,7 @@ static int sheipa_dm_spi_cs_info(struct udevice *udev,
 	return 0;
 }
 
-static int sheipa_dm_spi_child_pre_probe(struct udevice *uflash)
+static int rts_dm_spi_child_pre_probe(struct udevice *uflash)
 {
 	struct dm_spi_slave_plat *plat = dev_get_parent_plat(uflash);
 	struct spi_slave *slave = dev_get_parent_priv(uflash);
@@ -1791,7 +1899,7 @@ static int sheipa_dm_spi_child_pre_probe(struct udevice *uflash)
 	return 0;
 }
 
-static int sheipa_dm_spi_child_post_bind(struct udevice *uflash)
+static int rts_dm_spi_child_post_bind(struct udevice *uflash)
 {
 	struct dm_spi_slave_plat *plat = dev_get_parent_plat(uflash);
 
@@ -1801,52 +1909,54 @@ static int sheipa_dm_spi_child_post_bind(struct udevice *uflash)
 	return spi_slave_of_to_plat(uflash, plat);
 }
 
-static const struct dm_spi_ops sheipa_spi_ops = {
-	.claim_bus      = sheipa_dm_spi_claim_bus,
-	.release_bus    = sheipa_dm_spi_release_bus,
-	.set_speed      = sheipa_dm_spi_set_speed,
-	.set_mode       = sheipa_dm_spi_set_mode,
-	.xfer           = sheipa_dm_spi_xfer,
-	.cs_info        = sheipa_dm_spi_cs_info,
+static const struct dm_spi_ops rts_spi_ops = {
+	.claim_bus      = rts_dm_spi_claim_bus,
+	.release_bus    = rts_dm_spi_release_bus,
+	.set_speed      = rts_dm_spi_set_speed,
+	.set_mode       = rts_dm_spi_set_mode,
+	.xfer           = rts_dm_spi_xfer,
+	.cs_info        = rts_dm_spi_cs_info,
 };
 
-static const struct udevice_id sheipa_spi_ids[] = {
+static const struct udevice_id rts_spi_ids[] = {
 	{ .compatible = "realtek,rts3917-quadspi" },
 	{ }
 };
 
-U_BOOT_DRIVER(sheipa_spi) = {
+U_BOOT_DRIVER(rts_spi) = {
 	.name   = "rts_spi",
 	.id     = UCLASS_SPI,
-	.of_match = sheipa_spi_ids,
-	.ops    = &sheipa_spi_ops,
-	.child_pre_probe = sheipa_dm_spi_child_pre_probe,
-	.child_post_bind = sheipa_dm_spi_child_post_bind,
+	.of_match = rts_spi_ids,
+	.ops    = &rts_spi_ops,
+	.child_pre_probe = rts_dm_spi_child_pre_probe,
+	.child_post_bind = rts_dm_spi_child_post_bind,
 #if CONFIG_IS_ENABLED(OF_CONTROL)
-	.of_to_plat = sheipa_dm_spi_of_to_plat,
+	.of_to_plat = rts_dm_spi_of_to_plat,
 #endif
 	.per_child_auto = sizeof(struct spi_slave),
 	.per_child_plat_auto = sizeof(struct dm_spi_slave_plat),
-	.plat_auto = sizeof(struct sheipa_spi_platdata),
-	.priv_auto = sizeof(struct sheipa_spi),
-	.probe  = sheipa_dm_spi_probe,
+	.plat_auto = sizeof(struct rts_spi_platdata),
+	.priv_auto = sizeof(struct rts_spi),
+	.probe  = rts_dm_spi_probe,
 };
 
 #if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(RTS_QSPI)
-static const struct sheipa_spi_platdata sheipa_spi0_platdata = {
-	.regs = CONFIG_BSP_SPIC_PADDR,
+static const struct rts_spi_platdata rts_spi0_platdata = {
+	.regs = (void *)CONFIG_BSP_SPIC_PADDR,
+	.rst_regs = (void *)SPIC_PGM_FIFO_INIT_ADDR,
 	.frequency = -1,
 	.deactivate_delay_us = 0,
 };
 
 U_BOOT_DRVINFO(rts_spi) = {
 	.name = "rts_spi",
-	.plat = &sheipa_spi0_platdata,
+	.plat = &rts_spi0_platdata,
 };
 
+#endif
+
+#if CONFIG_IS_ENABLED(RTS_QSPI)
 U_BOOT_DRVINFO(spi_nor) = {
 	.name = "jedec_spi_nor",
-	.plat = &sheipa_spi0_platdata,
 };
-
 #endif

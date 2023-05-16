@@ -661,3 +661,13 @@ U_BOOT_CMD(
 	sf,	5,	1,	do_spi_flash,
 	"SPI flash sub-system", long_help
 );
+
+int exit_spi_qpi_mode(void)
+{
+	int ret = 0;
+
+	if (flash)
+		ret = flash_exit_qpi(flash);
+	return ret;
+}
+

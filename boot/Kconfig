@@ -1092,6 +1092,7 @@ config RTS_NOR_BOOT
 	select DM_SPI
 	select DM_SPI_FLASH
 	select ENV_IS_IN_SPI_FLASH
+	default y
 	help
 	  Enabling this will make a U-Boot binary that is capable of being
 	  booted via NOR.  In this case we will enable certain pinmux early

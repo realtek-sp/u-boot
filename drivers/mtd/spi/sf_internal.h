@@ -170,4 +170,8 @@ static inline void spi_flash_mtd_unregister(struct spi_flash *flash)
 }
 #endif
 
+int flash_set_rst_fifo(struct spi_slave *slave, const u16 reset_flow[]);
+int spi_flash_set_auto_mode(struct spi_nor *nor);
+int flash_enable_qpi(struct spi_nor *nor);
+
 #endif /* _SF_INTERNAL_H_ */

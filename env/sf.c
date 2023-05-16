@@ -231,6 +231,7 @@ static int env_sf_save(void)
 	sector = DIV_ROUND_UP(CONFIG_ENV_SIZE, sect_size);
 
 	puts("Erasing SPI flash...");
+	flash->flash_unlock(flash, 0, 0);
 	ret = spi_flash_erase(env_flash, CONFIG_ENV_OFFSET,
 		sector * sect_size);
 	if (ret)
@@ -249,10 +250,12 @@ static int env_sf_save(void)
 			goto done;
 	}
 
+	flash->flash_lock(flash, 0, 0);
 	ret = 0;
 	puts("done\n");
 
 done:
+	flash->flash_lock(flash, 0, 0);
 	spi_flash_free(env_flash);
 
 	if (saved_buffer)

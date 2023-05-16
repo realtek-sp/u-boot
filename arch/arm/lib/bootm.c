@@ -367,7 +367,16 @@ static void boot_jump_linux(struct bootm_headers *images, int flag)
 							  0, machid, r2);
 		} else
 #endif
+		{
+#ifdef CONFIG_NOR_QPI_MODE
+			int ret = 0;
+
+			ret = exit_spi_qpi_mode();
+			if (ret != 0)
+				printf("exit qpi mode fail\n");
+#endif
 			kernel_entry(0, machid, r2);
+		}
 	}
 #endif
 }

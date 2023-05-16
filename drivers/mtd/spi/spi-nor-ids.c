@@ -287,7 +287,19 @@ const struct flash_info spi_nor_ids[] = {
 			{0x4466, 0x8499, 0x0000}
 	},
 	{
+		INFO("PY25Q64HA", 0x852017, 0, 64 * 1024, 128,
+			SPI_NOR_QUAD_READ | SPI_NOR_WR_QUAD_I, SR_3REG, 8),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
+	{
 		INFO("P25Q128H", 0x856018, 0, 64 * 1024, 256,
+			SPI_NOR_QUAD_READ | SPI_NOR_WR_QUAD_I, SR_3REG, 8),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
+	{
+		INFO("PY25Q128HA", 0x852018, 0, 64 * 1024, 256,
 			SPI_NOR_QUAD_READ | SPI_NOR_WR_QUAD_I, SR_3REG, 8),
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4466, 0x8499, 0x0000}
@@ -313,19 +325,6 @@ const struct flash_info spi_nor_ids[] = {
 		INFO("XD25Q64C", 0xd84017, 0, 64 * 1024, 128,
 			SPI_NOR_QUAD_READ | SPI_NOR_WR_QUAD_I, SR_3REG, 8),
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
-			{0x4466, 0x8499, 0x0000}
-	},
-#endif
-#ifdef CONFIG_SPI_FLASH_ZBIT
-	/* ZBIT */
-	{
-		INFO("ZB25VQ64B", 0x5e4017, 0, 64 * 1024, 128,
-			SPI_NOR_QUAD_READ | SPI_NOR_WR_QUAD_I, SR_3REG, 8), 0,
-			{0x4466, 0x8499, 0x0000}
-	},
-	{
-		INFO("ZB25VQ128A", 0x5e4018, 0, 64 * 1024, 256,
-			SPI_NOR_QUAD_READ | SPI_NOR_WR_QUAD_I, SR_3REG, 8), 0,
 			{0x4466, 0x8499, 0x0000}
 	},
 #endif
@@ -548,7 +547,19 @@ const struct flash_info spi_nor_ids[] = {
 			{0x4466, 0x8499, 0x0000}
 	},
 	{
+		INFO("PY25Q64HA", 0x852017, 0, 64 * 1024, 128,
+			SPI_NOR_DUAL_READ, SR_3REG, 8),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
+	{
 		INFO("P25Q128H", 0x856018, 0, 64 * 1024, 256,
+			SPI_NOR_DUAL_READ, SR_3REG, 8),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
+	{
+		INFO("PY25Q128HA", 0x852018, 0, 64 * 1024, 256,
 			SPI_NOR_DUAL_READ, SR_3REG, 8),
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4466, 0x8499, 0x0000}
@@ -574,19 +585,6 @@ const struct flash_info spi_nor_ids[] = {
 		INFO("XD25Q64C", 0xd84017, 0, 64 * 1024, 128,
 			SPI_NOR_DUAL_READ, SR_3REG, 8),
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
-			{0x4466, 0x8499, 0x0000}
-	},
-#endif
-#ifdef CONFIG_SPI_FLASH_ZBIT
-	/* ZBIT */
-	{
-		INFO("ZB25VQ64B", 0x5e4017, 0, 64 * 1024, 128,
-			SPI_NOR_DUAL_READ, SR_3REG, 8), 0,
-			{0x4466, 0x8499, 0x0000}
-	},
-	{
-		INFO("ZB25VQ128A", 0x5e4018, 0, 64 * 1024, 256,
-			SPI_NOR_DUAL_READ, SR_3REG, 8), 0,
 			{0x4466, 0x8499, 0x0000}
 	},
 #endif
@@ -791,7 +789,17 @@ const struct flash_info spi_nor_ids[] = {
 			{0x4466, 0x8499, 0x0000}
 	},
 	{
+		INFO("PY25Q64HA", 0x852017, 0, 64 * 1024, 128,
+			0, SR_3REG, 0), SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
+	{
 		INFO("P25Q128H", 0x856018, 0, 64 * 1024, 256,
+			0, SR_3REG, 0), SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
+	{
+		INFO("PY25Q128HA", 0x852018, 0, 64 * 1024, 256,
 			0, SR_3REG, 0), SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4466, 0x8499, 0x0000}
 	},
@@ -815,22 +823,8 @@ const struct flash_info spi_nor_ids[] = {
 			{0x4466, 0x8499, 0x0000}
 	},
 #endif
-#ifdef CONFIG_SPI_FLASH_ZBIT
-	/* ZBIT */
-	{
-		INFO("ZB25VQ64B", 0x5e4017, 0, 64 * 1024, 128,
-			0, SR_3REG, 0), 0,
-			{0x4466, 0x8499, 0x0000}
-	},
-	{
-		INFO("ZB25VQ128A", 0x5e4018, 0, 64 * 1024, 256,
-			0, SR_3REG, 0), 0,
-			{0x4466, 0x8499, 0x0000}
-	},
-#endif
 #endif
 
-// After that, you need to check.
 #ifdef CONFIG_NOR_QPI_MODE
 #ifdef CONFIG_SPI_FLASH_EON		/* EON */
 	/* EON -- en25xxx */
@@ -984,7 +978,19 @@ const struct flash_info spi_nor_ids[] = {
 			{0x4666, 0x8699, 0x0000}
 	},
 	{
+		INFO("PY25Q64HA", 0x852017, 0, 64 * 1024, 128,
+			SPI_NOR_4IO_READ | QPI_II, SR_3REG, 10),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4666, 0x8699, 0x0000}
+	},
+	{
 		INFO("P25Q128H", 0x856018, 0, 64 * 1024, 256,
+			SPI_NOR_4IO_READ | QPI_II, SR_3REG, 10),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4666, 0x8699, 0x0000}
+	},
+	{
+		INFO("PY25Q128HA", 0x852018, 0, 64 * 1024, 256,
 			SPI_NOR_4IO_READ | QPI_II, SR_3REG, 10),
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4666, 0x8699, 0x0000}
@@ -1001,19 +1007,6 @@ const struct flash_info spi_nor_ids[] = {
 		INFO("NM25Q128EVB", 0x522118, 0, 64 * 1024, 256,
 			SPI_NOR_4IO_READ | QPI_II, SR_3REG, 4),
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
-			{0x4666, 0x8699, 0x0000}
-	},
-#endif
-#ifdef CONFIG_SPI_FLASH_ZBIT
-	/* ZBIT */
-	{
-		INFO("ZB25VQ64B", 0x5e4017, 0, 64 * 1024, 128,
-			SPI_NOR_4IO_READ | QPI_II, SR_3REG, 4), 0,
-			{0x4666, 0x8699, 0x0000}
-	},
-	{
-		INFO("ZB25VQ128A", 0x5e4018, 0, 64 * 1024, 256,
-			SPI_NOR_4IO_READ | QPI_II, SR_3REG, 4), 0,
 			{0x4666, 0x8699, 0x0000}
 	},
 #endif
@@ -1074,6 +1067,20 @@ const struct flash_info spi_nor_ids[] = {
 			SPI_NOR_4IO_READ | SPI_NOR_DTR |
 			SPI_NOR_WR_QUAD_I, SR_3REG, 6), 0,
 			{0x4466, 0x8499, 0x0000}
+	},
+#endif
+#ifdef CONFIG_SPI_FLASH_PUYA
+	{
+		INFO("PY25Q64HA", 0x852017, 0, 64 * 1024, 128,
+			SPI_NOR_4IO_READ | SPI_NOR_DTR | SPI_NOR_WR_QUAD_I,
+			SR_3REG, 8), SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4666, 0x8699, 0x0000}
+	},
+	{
+		INFO("PY25Q128HA", 0x852018, 0, 64 * 1024, 256,
+			SPI_NOR_4IO_READ | SPI_NOR_DTR | SPI_NOR_WR_QUAD_I,
+			SR_3REG, 8), SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4666, 0x8699, 0x0000}
 	},
 #endif
 #endif

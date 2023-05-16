@@ -11,8 +11,8 @@
  * published by the Free Software Foundation.
  */
 
-#ifndef _SPI_SHEIPA_H
-#define _SPI_SHEIPA_H
+#ifndef _RTS_QSPI_H
+#define _RTS_QSPI_H
 
 #ifndef _DW_COMMON_H
 #define _DW_COMMON_H
@@ -82,47 +82,37 @@
 #define DEF_WR_BLOCK_BOUND         256
 
 /* General flash opcode. */
-#define CMD_PAGE_PROGRAM	0x02
-#define CMD_PAGE_PROGRAM_4B	0X12
-#define CMD_READ_ARRAY_SLOW	0x03
-#define CMD_WRITE_DISABLE	0x04	/* write disable */
-#define CMD_READ_CONF_STATUS	0x15
-#define CMD_WRITE_ENABLE	0x06
-#define CMD_READ_ARRAY_FAST	0x0b
-#define CMD_READ_ARRAY_FAST_4B	0x0c
-#define CMD_READ_ID		0x9f
-#define CMD_ERASE_CHIP		0xc7	/* chip erase */
-#define CMD_ERASE_4K		0x20	/* erase 4KiB Block */
-#define CMD_ERASE_4K_4B		0x21
-#define CMD_ERASE_64K		0xd8	/* sector erase(usually 64KiB) */
-#define CMD_ERASE_64K_4B	0xdc
-#define CMD_ENTER_4B		0xb7
+#define CMD_PAGE_PROGRAM		0x02
+#define CMD_PAGE_PROGRAM_4B		0X12
+#define CMD_READ_ARRAY_SLOW		0x03
+#define CMD_WRITE_DISABLE		0x04	/* write disable */
+#define CMD_READ_CONF_STATUS		0x15
+#define CMD_WRITE_ENABLE		0x06
+#define CMD_READ_ARRAY_FAST		0x0b
+#define CMD_READ_ARRAY_FAST_4B		0x0c
+#define CMD_READ_ID			0x9f
+#define CMD_ERASE_CHIP			0xc7	/* chip erase */
+#define CMD_ERASE_4K			0x20	/* erase 4KiB Block */
+#define CMD_ERASE_4K_4B			0x21
+#define CMD_ERASE_64K			0xd8	/* sector erase(usually 64KiB) */
+#define CMD_ERASE_64K_4B		0xdc
+#define CMD_ENTER_4B			0xb7
 #define CMD_EXIT_4B			0xe9
 #define CMD_READ_4B			0x13
-#define CMD_WRITE_STATUS_1	0x01
-#define CMD_WRITE_STATUS_2	0x31
-#define CMD_WRITE_STATUS_3	0x11
-#define CMD_WRITE_EX_READ	0x83
+#define CMD_WRITE_STATUS_1		0x01
+#define CMD_WRITE_STATUS_2		0x31
+#define CMD_WRITE_STATUS_3		0x11
+#define CMD_WRITE_EX_READ		0x83
 #define CMD_WRITE_READ_PARAMETER	0xc0
-#define CMD_READ_STATUS_1	0x05
-#define CMD_READ_STATUS_2	0x35
-#define CMD_READ_STATUS_4	0x09
-#define CMD_READ_STATUS_5	0x95
-#define CMD_READ_EX_READ	0x81
+#define CMD_READ_STATUS_1		0x05
+#define CMD_READ_STATUS_2		0x35
+#define CMD_READ_STATUS_4		0x09
+#define CMD_READ_STATUS_5		0x95
+#define CMD_READ_EX_READ		0x81
 #define CMD_ENTER_QPI_I			0x35
 #define CMD_EXIT_QPI_I			0xF5
 #define CMD_ENTER_QPI_II		0x38
 #define CMD_EXIT_QPI_II			0xFF
-
-
-/* Support auto mode flash dummy and type info only. */
-#define DEF_RD_DUAL_TYPE           RD_DUAL_IO
-#define DEF_RD_QUAD_TYPE           RD_QUAD_IO
-#define DEF_WR_DUAL_TYPE           WR_MULTI_NONE
-#define DEF_WR_QUAD_TYPE           WR_QUAD_II
-#define DEF_RD_DUAL_DUMMY_CYCLE    0x4
-#define DEF_RD_QUAD_DUMMY_CYCLE    0x6
-#define DEF_RD_FAST_DUMMY_CYCLE    0x8
 
 /* Support auto mode flash opcode only. */
 /* Macronix: Extend flash opcode and used */
@@ -146,6 +136,18 @@
 /* Bank addr access commands */
 #define CMD_EXTNADDR_WREAR	0xC5	/* Write extended address register */
 #define CMD_EXTNADDR_RDEAR	0xC8	/* Read extended address register */
+
+/* SPIC CFG register offsets */
+#define SPIC_PGM_FIFO_INIT0		0x0000
+#define SPIC_PGM_FIFO_INIT1		0x0004
+#define SPIC_PGM_FIFO_INIT2		0x0008
+#define SPIC_PGM_FIFO_INIT3		0x000c
+#define SPIC_PGM_FIFO_INIT4		0x0010
+#define SPIC_PGM_FIFO_INIT5		0x0014
+#define SPIC_PGM_FIFO_INIT6		0x0018
+#define SPIC_PGM_FIFO_INIT7		0x001c
+#define SPIC_PGM_FIFO_WPTR		0x0020
+#define SPIC_NOR_DDR_CFG		0x0024
 
 /* macros to compose the values */
 #define TMOD_SEND	0xfffffcff
@@ -197,8 +199,6 @@
 #define SPI_FLASH_SSIENR                     ((uint32_t)    0)
 #define SPI_FLASH_RISR_ACEIR				((uint32_t)     8)
 #define SPI_FLASH_RISR_ACSIR				((uint32_t)     11)
-
-
 
 /*
  *  This data type is used to describe read type with multi_channel
@@ -263,38 +263,28 @@ enum flash_wr_multi_type {
 	WR_QUAD_II    = 0x14
 };
 
-#ifdef CONFIG_DM_SPI
-struct sheipa_spi_platdata {
+struct rts_spi_platdata {
 	void *regs;
-	signed int frequency;   /* default clock frequency, -1 for none */
-	uint deactivate_delay_us;       /* Delay to wait after deactivate */
+	void *rst_regs;
+	int frequency;			/* default clock frequency, -1 for none */
+	uint deactivate_delay_us;	/* Delay to wait after deactivate */
 };
 
-struct sheipa_spi {
+struct rts_spi {
 	struct spi_slave *slave;
 	void *regs;
-	void *auto_regs;
+	void *rst_regs;
 	void *comp_param;
 	unsigned int mode;
 	unsigned int freq;
 	unsigned long last_transaction_us;
 };
 
-#else
-struct sheipa_spi {
-	struct spi_slave slave;
-	void *regs;
-	void *auto_regs;
-	void *comp_param;
-};
-
-#endif
-
-#define RD_QUAD_IO_T			0x10
-#define RD_QUAD_O_T				0x08
-#define RD_DUAL_IO_T			0x04
-#define RD_DUAL_O_T				0x02
-#define FRD_SINGLE_T			0x01
+#define RD_QUAD_IO_T	0x10
+#define RD_QUAD_O_T	0x08
+#define RD_DUAL_IO_T	0x04
+#define RD_DUAL_O_T	0x02
+#define FRD_SINGLE_T	0x01
 
 /*
  * This is the structure used for accessing the spi_flash register
@@ -373,23 +363,23 @@ struct spi_flash_param {
 };
 
 /* This function is used to wait the SSI is not at busy state. */
-static void flash_wait_busy(struct sheipa_spi *dev);
+static void flash_wait_busy(struct rts_spi *dev);
 /* This function is used to read status of flash. */
-static uint8_t flash_get_status(struct sheipa_spi *dev);
+static uint8_t flash_get_status(struct rts_spi *dev);
 
 #ifdef CONFIG_DM_SPI
 static void spi_cs_activate(struct udevice *uflash);
 static void spi_cs_deactivate(struct udevice *uflash);
 #endif
 
-void spi_flash_wait_busy(struct sheipa_spi *dev);
+void spi_flash_wait_busy(struct rts_spi *dev);
 
 int flash_flush_rst_fifo(struct spi_slave *dev);
 
 int flash_set_rst_fifo_wptr(int reset_flow_cmd_num);
 
-int enable_spi_nor_ddr_mode(struct spi_slave *slave);
+int enable_spi_nor_ddr_mode(struct rts_spi *dev);
 
-int disable_spi_nor_ddr_mode(struct spi_slave *slave);
+int disable_spi_nor_ddr_mode(struct rts_spi *dev);
 
 #endif

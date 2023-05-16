@@ -538,7 +538,7 @@ config ENV_ADDR
 	hex "Environment address"
 	depends on ENV_IS_IN_FLASH || ENV_IS_IN_NVRAM || ENV_IS_IN_ONENAND || \
 		     ENV_IS_IN_REMOTE || ENV_IS_IN_SPI_FLASH
-	default 0x60000 if ENV_IS_IN_SPI_FLASH
+	default 0x80000 if ENV_IS_IN_SPI_FLASH
 	help
 	  Offset from the start of the device (or partition)
 
@@ -563,7 +563,7 @@ config ENV_OFFSET
 	default 0x140000 if ARCH_AT91
 	default 0x260000 if ARCH_OMAP2PLUS
 	default 0x1080000 if MICROBLAZE && ENV_IS_IN_SPI_FLASH
-	default 0x60000 if ENV_IS_IN_SPI_FLASH
+	default 0x80000 if ENV_IS_IN_SPI_FLASH
 	default 0x80000 if ENV_IS_IN_NAND
 	help
 	  Offset from the start of the device (or partition)
