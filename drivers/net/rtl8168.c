@@ -6048,14 +6048,16 @@ static const struct eth_ops rtl8168_eth_ops = {
 };
 
 static const struct udevice_id rtl8168_eth_ids[] = {
-	{ .compatible = "realtek,rtl8168" },
+	{ .compatible = "realtek,rts3917-r8168" },
 	{ }
 };
 
 U_BOOT_DRIVER(eth_rtl8168) = {
 	.name	= "eth_rtl8168",
 	.id	= UCLASS_ETH,
+#if CONFIG_IS_ENABLED(OF_CONTROL)
 	.of_match = rtl8168_eth_ids,
+#endif
 	.probe	= rtl8168_eth_probe,
 	.ops	= &rtl8168_eth_ops,
 	.priv_auto	= sizeof(struct rtl8168_private),

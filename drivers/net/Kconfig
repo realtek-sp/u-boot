@@ -580,6 +580,8 @@ config PCNET
 
 source "drivers/net/qe/Kconfig"
 
+config ETHADDR
+
 config RTL8139
 	bool "Realtek 8139 series Ethernet controller driver"
 	help
