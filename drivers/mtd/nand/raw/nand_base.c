@@ -47,6 +47,7 @@
 #endif
 #include <asm/io.h>
 #include <linux/errno.h>
+#include "rts_spinand.h"
 
 /* Define default oob placement schemes for large and small page devices */
 #ifndef CONFIG_SYS_NAND_DRIVER_ECC_LAYOUT
@@ -103,7 +104,7 @@ static int nand_do_write_oob(struct mtd_info *mtd, loff_t to,
  * For devices which display every fart in the system on a separate LED. Is
  * compiled away when LED support is disabled.
  */
-DEFINE_LED_TRIGGER(nand_led_trigger);
+// DEFINE_LED_TRIGGER(nand_led_trigger);
 
 static int check_offs_len(struct mtd_info *mtd,
 					loff_t ofs, uint64_t len)
@@ -887,6 +888,37 @@ static void panic_nand_wait(struct mtd_info *mtd, struct nand_chip *chip,
  *
  * Wait for command done. This applies to erase and program only.
  */
+#ifdef CONFIG_RTS_SPI_NAND_FLASH
+static int nand_wait(struct mtd_info *mtd, struct nand_chip *chip)
+{
+	unsigned long timeo = 400;
+	u8 ret = 0;
+
+	chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
+
+	u32 timer = (CONFIG_SYS_HZ * timeo) / 1000;
+	u32 time_start;
+
+	time_start = get_timer(0);
+
+	while (1) {
+		if (get_timer(time_start) > timer) {
+			printf("Timeout!");
+			return 0x01;
+		}
+
+		if (chip->dev_ready) {
+			if (chip->dev_ready(mtd))
+				break;
+		} else {
+			ret =  chip->read_byte(mtd);
+			if ((ret & 0x01) == NAND_STATUS_READY)
+				break;
+		}
+	}
+		return ret;
+}
+#else
 static int nand_wait(struct mtd_info *mtd, struct nand_chip *chip)
 {
 	unsigned long timeo = 400;
@@ -933,7 +965,7 @@ static int nand_wait(struct mtd_info *mtd, struct nand_chip *chip)
 	WARN_ON(!(status & NAND_STATUS_READY));
 	return status;
 }
-
+#endif
 /**
  * nand_reset_data_interface - Reset data interface and timings
  * @chip: The NAND chip
@@ -1391,7 +1423,10 @@ int nand_status_op(struct nand_chip *chip, u8 *status)
 {
 	struct mtd_info *mtd = nand_to_mtd(chip);
 
-	chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
+	if (CONFIG_IS_ENABLED(RTS_SPI_NAND_FLASH))
+		chip->cmdfunc(mtd, NAND_CMD_OTP, -1, -1);
+	else
+		chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
 	if (status)
 		*status = chip->read_byte(mtd);
 
@@ -4235,6 +4270,7 @@ static inline bool is_full_id_nand(struct nand_flash_dev *type)
 static bool find_full_id_nand(struct mtd_info *mtd, struct nand_chip *chip,
 		   struct nand_flash_dev *type)
 {
+	struct rts_spinand_info *info = (struct rts_spinand_info *)chip->priv;
 	if (!strncmp((char *)type->id, (char *)chip->id.data, type->id_len)) {
 		mtd->writesize = type->pagesize;
 		mtd->erasesize = type->erasesize;
@@ -4247,6 +4283,14 @@ static bool find_full_id_nand(struct mtd_info *mtd, struct nand_chip *chip,
 		chip->ecc_step_ds = NAND_ECC_STEP(type);
 		chip->onfi_timing_mode_default =
 					type->onfi_timing_mode_default;
+
+		info->spi_dev.flags = type->flag;
+		info->spi_dev.read_cmd = type->read_cmd;
+		info->spi_dev.read_dummy = type->read_dummy;
+		info->spi_dev.read_type = type->read_type;
+		info->spi_dev.write_cmd = type->write_cmd;
+		info->spi_dev.write_dummy = type->write_dummy;
+		info->spi_dev.write_type = type->write_type;
 
 		if (!mtd->name)
 			mtd->name = type->name;
@@ -4458,6 +4502,12 @@ ident_done:
 	pr_info("%s %s\n", manufacturer_desc->name,
 		type->name);
 #endif
+
+	printf("NAND device: Manufacturer ID: 0x%02x, Chip ID: 0x%02x (%s %s),",
+	       *maf_id, *dev_id, manufacturer_desc->name, type->name);
+	printf("%d MiB, %s, erase size: %d KiB, page size: %d, OOB size: %d\n",
+	       (int)(chip->chipsize >> 20), nand_is_slc(chip) ? "SLC" : "MLC",
+	       mtd->erasesize >> 10, mtd->writesize, mtd->oobsize);
 
 	pr_info("%d MiB, %s, erase size: %d KiB, page size: %d, OOB size: %d\n",
 		(int)(chip->chipsize >> 20), nand_is_slc(chip) ? "SLC" : "MLC",

@@ -1098,8 +1098,15 @@ config RTS_NOR_BOOT
 	  as the ROM only partially sets up pinmux.  We also default to using
 	  NOR for environment.
 
-config NAND_BOOT
+config RTS_NAND_BOOT
 	bool "Support for booting from NAND flash"
+	select CMD_NAND
+	select MTD
+	select MTD_RAW_NAND
+	select RTS_SPI_NAND_FLASH
+	select DM_MTD
+	select ENV_IS_IN_NAND
+	default n
 	imply MTD_RAW_NAND
 	help
 	  Enabling this will make a U-Boot binary that is capable of being

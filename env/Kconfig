@@ -564,6 +564,7 @@ config ENV_OFFSET
 	default 0x260000 if ARCH_OMAP2PLUS
 	default 0x1080000 if MICROBLAZE && ENV_IS_IN_SPI_FLASH
 	default 0x60000 if ENV_IS_IN_SPI_FLASH
+	default 0x80000 if ENV_IS_IN_NAND
 	help
 	  Offset from the start of the device (or partition)
 
@@ -582,6 +583,7 @@ config ENV_SIZE
 	default 0x40000 if ENV_IS_IN_SPI_FLASH && ARCH_ZYNQMP
 	default 0x20000 if ARCH_ZYNQ || ARCH_OMAP2PLUS || ARCH_AT91
 	default 0x20000 if RTS_NOR_BOOT && ENV_IS_IN_SPI_FLASH
+	default 0x40000 if RTS_NAND_BOOT && ENV_IS_IN_NAND
 	default 0x10000 if ARCH_SUNXI
 	default 0x8000 if ARCH_ROCKCHIP && ENV_IS_IN_MMC
 	default 0x2000 if ARCH_ROCKCHIP && ENV_IS_IN_SPI_FLASH

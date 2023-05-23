@@ -546,6 +546,36 @@ config NAND_MT7621
 	  The controller supports 4~12 bits correction per 512 bytes with a
 	  maximum 4KB page size.
 
+config RTS_SPI_NAND_FLASH
+	bool "Support RTS NAND controller"
+	depends on RTS_NAND_BOOT
+	select SYS_NAND_SELF_INIT
+	default n
+	help
+	  Enable support for RTS NAND flash controller.
+	  The controller support single/dual/quad channel read.
+
+choice
+	prompt "SPI NAND flash config"
+	depends on RTS_SPI_NAND_FLASH
+	default NAND_DUAL_CHANNEL
+	help
+	  Set spi nand flash channel.
+	  Default is dual channel read.
+
+config NAND_DUAL_CHANNEL
+	bool "Dual channel"
+	help
+	  Set spi nand flash channel to channel read.
+	  Data is transferred on SI/SO.
+
+config NAND_QUAD_CHANNEL
+	bool "Quad channel"
+	help
+	  Set spi nand flash channel to quad
+	  Data is transferred on SI/SO/WP/HOLD.
+endchoice
+
 comment "Generic NAND options"
 
 config SYS_NAND_BLOCK_SIZE

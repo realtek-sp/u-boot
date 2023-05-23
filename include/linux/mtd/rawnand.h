@@ -83,6 +83,8 @@ void nand_wait_ready(struct mtd_info *mtd);
 #define NAND_CMD_READOOB	0x50
 #define NAND_CMD_ERASE1		0x60
 #define NAND_CMD_STATUS		0x70
+#define NAND_CMD_OTP		0x72
+#define NAND_CMD_BLOCKLOCK	0x77
 #define NAND_CMD_SEQIN		0x80
 #define NAND_CMD_RNDIN		0x85
 #define NAND_CMD_READID		0x90
@@ -126,7 +128,11 @@ void nand_wait_ready(struct mtd_info *mtd);
 #define NAND_STATUS_FAIL	0x01
 #define NAND_STATUS_FAIL_N1	0x02
 #define NAND_STATUS_TRUE_READY	0x20
+#ifdef CONFIG_RTS_SPI_NAND_FLASH
+#define NAND_STATUS_READY	0x00
+#else
 #define NAND_STATUS_READY	0x40
+#endif
 #define NAND_STATUS_WP		0x80
 
 #define NAND_DATA_IFACE_CHECK_ONLY	-1
@@ -1039,6 +1045,12 @@ static inline void *nand_get_manufacturer_data(struct nand_chip *chip)
 #define NAND_MFR_SANDISK	0x45
 #define NAND_MFR_INTEL		0x89
 #define NAND_MFR_ATO		0x9b
+#define NAND_MFR_WINBOND	0xEF
+#define NAND_MFR_GIGADEVICE	0xc8
+#define NAND_MFR_XTX		0x0b
+#define NAND_XT26G02B		0xf2
+#define NAND_MFR_FUDAN		0xa1
+#define NAND_MFR_ESMT		0xc8
 
 /* The maximum expected count of bytes in the NAND ID sequence */
 #define NAND_MAX_ID_LEN 8
@@ -1113,6 +1125,15 @@ struct nand_flash_dev {
 	unsigned int chipsize;
 	unsigned int erasesize;
 	unsigned int options;
+#ifdef CONFIG_RTS_SPI_NAND_FLASH
+	uint16_t flag;
+	uint8_t read_cmd;
+	uint8_t read_type;
+	uint8_t read_dummy;
+	uint8_t write_cmd;
+	uint8_t write_type;
+	uint8_t write_dummy;
+#endif
 	uint16_t id_len;
 	uint16_t oobsize;
 	struct {
