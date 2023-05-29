@@ -209,7 +209,7 @@ static int spinand_cmd_process(struct rts_spinand_info *info,
 	controller_map->ssienr = 0;
 
 	if (cmd->rx_buf)
-		memcpy(cmd->rx_buf, controller_map->data_fifo, cmd->n_rx);
+		memcpy(cmd->rx_buf, (void *)controller_map->data_fifo, cmd->n_rx);
 
 	controller_map->read_dummy_len = read_data;
 	return res;
@@ -1540,7 +1540,9 @@ static const struct udevice_id rts_spinand_ids[] = {
 static int rts_spinand_probe(struct udevice *dev)
 {
 	struct rts_nfc *nfc = dev_get_priv(dev);
+#if !CONFIG_IS_ENABLED(OF_CONTROL)
 	struct rts_nfc_platdata *plat = dev_get_plat(dev);
+#endif
 	struct rts_spinand_info *nand_info;
 	struct spinand_state *state;
 	struct nand_chip *nand;
@@ -1552,8 +1554,8 @@ static int rts_spinand_probe(struct udevice *dev)
 #if !CONFIG_IS_ENABLED(OF_CONTROL)
 	nfc->regs = plat->regs;
 #else
-	nfc->regs = dev_read_addr(dev);
-	if (nfc->regs == FDT_ADDR_T_NONE)
+	nfc->regs = (void *)dev_read_addr(dev);
+	if ((fdt_addr_t)nfc->regs == FDT_ADDR_T_NONE)
 		return -EINVAL;
 #endif
 	nand_info = malloc(sizeof(struct rts_spinand_info));

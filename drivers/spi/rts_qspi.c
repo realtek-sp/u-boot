@@ -1729,11 +1729,6 @@ static int rts_dm_spi_probe(struct udevice *udev)
 	return 0;
 }
 
-static int rts_dm_spi_remove(struct udevice *dev)
-{
-	return -ENODEV;
-}
-
 static int rts_flush_fifo(struct udevice *uflash)
 {
 	if (!uflash)

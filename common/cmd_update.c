@@ -13,6 +13,7 @@
 #include <net.h>
 #include <dfu.h>
 #include <cpu_func.h>
+#include <dfu.h>
 
 #define GETMEM(addr)	(*(volatile u32 *)(addr))
 static char *tmpfile;
@@ -292,7 +293,6 @@ static int _do_write_all_(u32 all_len)
 	u32 ram_offset = 0x100;
 	u32 flash_offset = 0;
 	u32 filelen;
-	u32 dtb_offset;
 	u32 partition_size = 0;
 #ifdef CONFIG_CRYPTO_UPDATE
 	u32 klen;
@@ -471,7 +471,6 @@ int do_write_for_rescure(void)
 	u32 ram_offset = 0x0;
 	u32 flash_offset = 0;
 	u32 filelen;
-	u32 dtb_offset;
 	u32 partition_size = 0;
 
 	while (1) {

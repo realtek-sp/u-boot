@@ -6047,10 +6047,12 @@ static const struct eth_ops rtl8168_eth_ops = {
 	.write_hwaddr = rtl8168_write_hwaddr,
 };
 
+#if CONFIG_IS_ENABLED(OF_CONTROL)
 static const struct udevice_id rtl8168_eth_ids[] = {
 	{ .compatible = "realtek,rts3917-r8168" },
 	{ }
 };
+#endif
 
 U_BOOT_DRIVER(eth_rtl8168) = {
 	.name	= "eth_rtl8168",

@@ -460,13 +460,13 @@ void self_copy(void)
 	}
 
 	memset((void *)RESCUE_EMMC_DDR_MEM, 0, RESCUE_BIN_LENGTH);
-	memcpy((void *)(RESCUE_EMMC_DDR_MEM), RESCUE_UBOOT1_2_LOAD_ADDR,
+	memcpy((void *)(RESCUE_EMMC_DDR_MEM), (void *)RESCUE_UBOOT1_2_LOAD_ADDR,
 		RESCUE_UBOOT1_2_LOAD_SIZE);
 #ifdef CONFIG_FIT
 	offset = REG32(RESCUE_UBOOT1_2_LOAD_ADDR + 32);
 #endif
 	memcpy((void *)(RESCUE_EMMC_DDR_MEM + RESCUE_UBOOT1_2_LOAD_SIZE +
-		offset), RESCUE_UBOOT3_LOAD_ADDR, RESCUE_UBOOT3_LOAD_SIZE);
+		offset), (void *)RESCUE_UBOOT3_LOAD_ADDR, RESCUE_UBOOT3_LOAD_SIZE);
 
 	blk_derase(mmc_get_blk_desc(mmc), 0, (RESCUE_BIN_LENGTH >> 9));
 	n = blk_dwrite(mmc_get_blk_desc(mmc), 0, (RESCUE_BIN_LENGTH >> 9),

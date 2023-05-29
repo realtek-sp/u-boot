@@ -11,9 +11,6 @@
 #include <asm/io.h>
 #include <mmc.h>
 
-#define clear_bit(addr, val)	writel((readl(addr) & ~(val)), addr)
-#define set_bit(addr, val)	writel((readl(addr) | (val)), addr)
-
 #define RTS_MMC_DUMMY_F_MIN     250000
 #define RTS_MMC_DUMMY_F_MAX     208000000
 #define RTS_MMC_MAX_BLOCK_LEN   0x80

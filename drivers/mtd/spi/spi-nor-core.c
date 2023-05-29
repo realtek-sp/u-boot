@@ -2778,7 +2778,7 @@ static int spi_flash_cmd_write_status(struct spi_nor *nor,
 	int ret;
 
 	write_enable(nor);
-	ret = nor->write_reg(nor, cmd, &sr, data_len);
+	ret = nor->write_reg(nor, cmd, (u8 *)&sr, data_len);
 
 	return ret;
 }

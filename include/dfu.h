@@ -15,8 +15,10 @@
 #include <mmc.h>
 #include <spi_flash.h>
 #include <linux/usb/composite.h>
+#include <command.h>
 
 extern int dfu_done_flag;
+extern long dfu_all_len;
 
 enum dfu_device_type {
 	DFU_DEV_MMC = 1,
@@ -172,6 +174,7 @@ extern struct list_head dfu_list;
 void set_dfu_alt_info(char *interface, char *devstr);
 #endif
 
+int do_dfu(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[]);
 /**
  * dfu_alt_init() - initialize buffer for dfu entities
  *

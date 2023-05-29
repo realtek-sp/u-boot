@@ -205,9 +205,7 @@
 #define DDR2_MCM
 #endif
 #ifdef CONFIG_RTS_EMMC_BOOT
-#define CONFIG_SYS_MMC_ENV_DEV 0
 #define CONFIG_SUPPORT_EMMC_BOOT
-#define CONFIG_SYS_MMC_ENV_PART	1
 #endif
 
 #define SYS_DMY_0 0x1886f00c

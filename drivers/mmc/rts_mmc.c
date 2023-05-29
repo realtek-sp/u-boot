@@ -26,6 +26,10 @@
 #include "rts_mmcregs.h"
 #include <linux/bug.h>
 #include <linux/delay.h>
+#include <cpu_func.h>
+
+#define clear_bit(addr, val)	writel((readl(addr) & ~(val)), addr)
+#define set_bit(addr, val)	writel((readl(addr) | (val)), addr)
 
 #define FORCE_BUS_SD_RESET		0x80
 #define FORCE_BUS_SD1_RESET		0x200
@@ -872,7 +876,6 @@ static int rts_mmc_send_cmd(struct udevice *dev, struct mmc_cmd *cmd,
 			    struct mmc_data *data)
 {
 	struct rts_mmc_host *rtsmmc = dev_get_priv(dev);
-	struct mmc *mmc = mmc_get_mmc_dev(dev);
 	int err = 0;
 	int data_size = 0;
 
@@ -968,14 +971,14 @@ static const struct dm_mmc_ops rts_mmc_ops = {
 	.get_wp		= rts_mmc_get_ro,
 };
 
+#if CONFIG_IS_ENABLED(OF_CONTROL)
 static int rts_mmc_ofdata_to_platdata(struct udevice *dev)
 {
-	struct rts_mmc_host *priv = dev_get_priv(dev);
 	struct rts_mmc_plat *plat = dev_get_plat(dev);
 	struct mmc_config *cfg;
 	int ret;
 
-	plat->base_addr = (void *)dev_read_addr(dev);
+	plat->base_addr = dev_read_addr(dev);
 	cfg = &plat->cfg;
 	cfg->name = "RTS MMC";
 	cfg->host_caps = MMC_MODE_HC;
@@ -992,6 +995,7 @@ static int rts_mmc_ofdata_to_platdata(struct udevice *dev)
 
 	return 0;
 }
+#endif
 
 static void rts_gpio_direction_output(unsigned int offset, int value)
 {
@@ -1012,6 +1016,43 @@ static void rtsmmc_pull_ctl_enable(struct rts_mmc_host *rtsmmc)
 		tbl++;
 	}
 }
+
+#ifdef CONFIG_TARGET_FPGA
+
+static inline int rtsmmc_switch_voltage_fpga(u8 voltage)
+{
+	rts_gpio_direction_output(SD_VOTAGE_SWITCH_CTRL_C2, voltage);
+	mdelay(50);
+	return 0;
+}
+
+static int rtsmmc_power_on_fpga(struct rtsmmc_host *rtsmmc)
+{
+	int err;
+
+	rtsmmc_init_cmd(rtsmmc);
+	rtsmmc_write(rtsmmc, SD_AUTO_RESET_FIFO, AUTO_RESET_FIFO_EN,
+			AUTO_RESET_FIFO_EN);
+
+	rtsmmc_pull_ctl_enable(rtsmmc);
+
+	err = rtsmmc_transfer_cmd(rtsmmc, CMD_TYPE_CMD_BUFF);
+	if (err < 0)
+		return err;
+
+	rts_gpio_direction_output(SD_PULL_CTRL_C2, 1);
+	rts_gpio_direction_output(SD_PWR_CTRL_C2, 1);
+
+	mdelay(20);
+
+	err = rtsmmc_reg_write(CARD_OE, SD_OUTPUT_EN, SD_OUTPUT_EN);
+	if (err < 0)
+		return err;
+
+	return 0;
+}
+
+#else
 
 static int rtsmmc_wait_voltage_stable_1(struct rts_mmc_host *rtsmmc)
 {
@@ -1136,6 +1177,7 @@ static int rtsmmc_power_on_asic(struct rts_mmc_host *rtsmmc)
 
 	return err;
 }
+#endif
 
 static inline int rtsmmc_clk_enable(void)
 {
@@ -1217,13 +1259,15 @@ static int rtsmmc_set_timing_asic(struct rts_mmc_host *rtsmmc,
 	return err;
 }
 #endif
+
 int rtsmmc_set_timing(struct rts_mmc_host *rtsmmc, int timing)
 {
 	int err = 0;
-	if (IS_ENABLED(CONFIG_TARGET_FPGA))
+#ifdef CONFIG_TARGET_FPGA
 		err = rtsmmc_set_timing_fpga(rtsmmc, timing);
-	else
+#else
 		err = rtsmmc_set_timing_asic(rtsmmc, timing);
+#endif
 
 	return err;
 }
@@ -1233,15 +1277,15 @@ static int rtsmmc_power_on(struct rts_mmc_host *rtsmmc)
 	int err;
 
 	rtsmmc_clk_enable();
-	if (IS_ENABLED(CONFIG_TARGET_FPGA)) {
+#ifdef CONFIG_TARGET_FPGA
 		err = rtsmmc_power_on_fpga(rtsmmc);
 		rtsmmc_set_timing(rtsmmc, 0);
 		rtsmmc_switch_voltage_fpga(VOLTAGE_OUTPUT_3V3);
-	} else {
+#else
 		err = rtsmmc_power_on_asic(rtsmmc);
 		rtsmmc_set_timing(rtsmmc, 0);
 		rtsmmc_switch_voltage_asic(rtsmmc, VOLTAGE_OUTPUT_3V3);
-	}
+#endif
 
 	if (err)
 		return err;
@@ -1311,10 +1355,10 @@ static int rts_mmc_probe(struct udevice *dev)
 	upriv->mmc = &plat->mmc;
 	rtsmmc->regs = plat->base_addr;
 	rtsmmc->cfg = plat->cfg;
-	rtsmmc->resv_buf = 0x19010000;
+	rtsmmc->resv_buf = (void *)0x19010000;
 	if (!rtsmmc->resv_buf)
 		return -ENOMEM;
-	rtsmmc->cmd_addr = rtsmmc->resv_buf;
+	rtsmmc->cmd_addr = (u32)rtsmmc->resv_buf;
 	rtsmmc->cmd_ptr = (void *)(rtsmmc->cmd_addr);
 	rtsmmc->sg_tbl_ptr = rtsmmc->cmd_ptr + CMD_BUF_LEN;
 	rtsmmc->sg_tbl_addr = rtsmmc->cmd_addr + CMD_BUF_LEN;
@@ -1332,10 +1376,12 @@ static int rts_mmc_bind(struct udevice *dev)
 	return mmc_bind(dev, &plat->mmc, &plat->cfg);
 }
 
+#if CONFIG_IS_ENABLED(OF_CONTROL)
 static const struct udevice_id rts_mmc_ids[] = {
 	{.compatible = "realtek,rts3917-sdhc"},
 	{/* sentinel */}
 };
+#endif
 
 U_BOOT_DRIVER(rts_mmc_drv) = {
 	.name = "rts_mmc",

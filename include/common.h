@@ -16,6 +16,7 @@
 #include <config.h>
 #include <errno.h>
 #include <time.h>
+#include <linux/delay.h>
 #include <linux/types.h>
 #include <linux/printk.h>
 #include <linux/string.h>
@@ -23,6 +24,7 @@
 #include <stdio.h>
 #include <linux/kernel.h>
 #include <asm/u-boot.h> /* boot information for Linux kernel */
+#include <asm/global_data.h>	/* global data used for startup functions */
 #include <vsprintf.h>
 
 u8 get_rst_mode(void);
@@ -44,6 +46,9 @@ int do_write_for_rescure(void);
 int get_data_length_from_mmc(ulong offset, ulong *data_length);
 int copy_mmcdata_to_ram(ulong offset, ulong ram_addr, ulong data_length);
 
+int fdt_node_offset_by_label(const void *fdt, int startoffset,
+				  const char *label);
+u32 get_dtb_data_of_offset(const void *data, int len);
 #endif	/* __ASSEMBLY__ */
 
 /* Pull in stuff for the build system */

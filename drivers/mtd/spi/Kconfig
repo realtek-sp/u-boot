@@ -192,7 +192,7 @@ config SPI_FLASH_MT35XU
 
 config SPI_FLASH_SST
 	bool "SST SPI flash support"
-	default y
+	default n
 	help
 	  Add support for various SST SPI flash chips (SST25xxx)
 

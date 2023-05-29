@@ -143,6 +143,7 @@ static void rts_usb_clear_phy_int(struct rts_usb_phy *rts, uint32_t int_val,
 #define MDO_MASK 0x08
 
 /* Push data at falling edge */
+#ifdef CONFIG_TARGET_FPGA
 #define MDI_CLK_W(rts, init, bit)                     \
 	do {                                          \
 		(init) |= MD_OE;                      \
@@ -343,7 +344,6 @@ static void rts_usb_disable_cali(struct rts_usb_phy *rts, int port, u16 calen)
 	mdio_read(rts, PORT_CFG3(port));
 }
 
-#ifdef CONFIG_TARGET_FPGA
 static int rts_init_fpga_phy(struct rts_usb_phy *rts)
 {
 	int i, port;

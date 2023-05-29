@@ -230,7 +230,7 @@ ulong genimg_get_image(ulong img_addr)
 
 		if (img_addr < 0x80000000) {
 			get_data_length_from_mmc(img_addr, &data_len);
-			printf("emmc get data len is %x\n", data_len);
+			printf("emmc get data len is %lx\n", data_len);
 			ram_addr = CONFIG_SYS_LOAD_ADDR;
 			copy_mmcdata_to_ram(img_addr, ram_addr, data_len);
 		}

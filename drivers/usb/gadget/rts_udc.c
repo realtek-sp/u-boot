@@ -1331,6 +1331,7 @@ err_request:
 	return ret;
 }
 
+#if CONFIG_IS_ENABLED(OF_CONTROL)
 static int rts_udc_ofdata_to_platdata(struct udevice *dev)
 {
 	struct rts_udc_plat *plat = dev_get_plat(dev);
@@ -1344,6 +1345,7 @@ static const struct udevice_id rts_udc_ids[] = {
 	{ .compatible = "realtek,rts3917-usb-device" },
 	{},
 };
+#endif
 
 U_BOOT_DRIVER(rts_udc) = {
 	.name = "rts_udc",

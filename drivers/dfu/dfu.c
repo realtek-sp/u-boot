@@ -241,6 +241,7 @@ static char *dfu_get_hash_algo(void)
 	return NULL;
 }
 
+long dfu_all_len;
 static int dfu_write_buffer_drain(struct dfu_entity *dfu)
 {
 	long w_size;
@@ -248,6 +249,7 @@ static int dfu_write_buffer_drain(struct dfu_entity *dfu)
 
 	/* flush size? */
 	w_size = dfu->i_buf - dfu->i_buf_start;
+	dfu_all_len += w_size;
 	if (w_size == 0)
 		return 0;
 

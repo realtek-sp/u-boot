@@ -351,10 +351,12 @@ static int rts_gpio_probe(struct udevice *dev)
 	return 0;
 }
 
+#if CONFIG_IS_ENABLED(OF_CONTROL)
 static const struct udevice_id rts_gpio_ids[] = {
 	{.compatible = "realtek,rts3917-pinctrl"},
 	{/* sentinel */}
 };
+#endif
 
 U_BOOT_DRIVER(rts_gpio_drv) = {
 	.name = "rts_gpio",

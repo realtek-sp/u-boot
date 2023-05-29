@@ -553,6 +553,7 @@ config ZYNQMP_GQSPI
 
 config RTS_QSPI
 	bool "Realtek QSPI driver"
+	depends on RTS_NOR_BOOT
 	default n
 	help
 	  Enable the Realtek spi nor flash driver.
