@@ -25,12 +25,16 @@
 #include <asm/u-boot.h> /* boot information for Linux kernel */
 #include <vsprintf.h>
 
+u8 get_rst_mode(void);
 int exit_spi_qpi_mode(void);
 
 int spi_flash_update_external(u32 offset, size_t len, void *buf);
 int spi_flash_read_external(u32 offset, size_t len, void *buf);
+
+/* nand_ops.c */
 int update_image_for_nand(ulong offset, size_t length,
 			  unsigned char *buf, size_t erase_length);
+int update_image_to_nand(ulong offset, size_t length, unsigned char *buf);
 
 int do_write_for_rescure(void);
 

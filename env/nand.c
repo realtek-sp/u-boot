@@ -25,6 +25,8 @@
 #include <search.h>
 #include <errno.h>
 #include <u-boot/crc.h>
+#include <linux/mtd/rawnand.h>
+#include <cpu_func.h>
 
 #if defined(CONFIG_CMD_SAVEENV) && defined(CONFIG_CMD_NAND) && \
 		!defined(CONFIG_SPL_BUILD)
@@ -300,6 +302,60 @@ int get_nand_env_oob(struct mtd_info *mtd, unsigned long *result)
 }
 #endif
 
+static void self_copy(void)
+{
+	struct mtd_info *nand = get_nand_dev_by_index(0);
+	struct nand_chip *chip = mtd_to_nand(nand);
+	u8 ret;
+	u32 magic_num;
+	u32 magic_num2;
+
+	magic_num = htonl(REG32(RESCUE_UBOOT1_2_LOAD_ADDR));
+	if (magic_num != 0x626f6f74) {
+		printf("close write protect\n");
+		chip->cmdfunc(nand, NAND_CMD_BLOCKLOCK, 0x00, -1);
+		magic_num2 = REG32(RESCUE_UBOOT3_LOAD_ADDR);
+		if (magic_num != 0x10064AA || magic_num2 == 0) {
+			memcpy((void *)(RESCUE_UBOOT_LOAD),
+			       (void *)RESCUE_UBOOT1_2_LOAD_ADDR,
+			       RESCUE_UBOOT1_2_LOAD_SIZE);
+			flush_cache(RESCUE_UBOOT_LOAD,
+				    RESCUE_UBOOT1_2_LOAD_SIZE);
+
+			ret = update_image_to_nand(RESCUE_FLASH_OFFSET,
+					RESCUE_BIN_LENGTH,
+					(unsigned char *)RESCUE_UBOOT_LOAD);
+		} else {
+			magic_num2 = REG32(0x19000020);
+			memcpy((void *)(RESCUE_UBOOT_LOAD - magic_num2),
+			       (void *)RESCUE_UBOOT1_2_LOAD_ADDR,
+			       RESCUE_UBOOT1_2_LOAD_SIZE);
+			flush_cache(RESCUE_UBOOT_LOAD - magic_num2,
+				    RESCUE_UBOOT1_2_LOAD_SIZE);
+
+			ret = update_image_to_nand(RESCUE_FLASH_OFFSET,
+						   RESCUE_BIN_LENGTH,
+			(unsigned char *)(RESCUE_UBOOT_LOAD - magic_num2));
+		}
+
+		if (ret < 0)
+			printf("self copy failed\n");
+		else
+			printf("self copy OK\n");
+	} else {
+		printf("user write linux to flash\n");
+
+		memcpy((void *)(RESCUE_LINUX_LOAD_ADDR),
+		       (void *)RESCUE_UBOOT1_2_LOAD_ADDR,
+		       RESCUE_UBOOT1_2_LOAD_SIZE);
+		flush_cache(RESCUE_LINUX_LOAD_ADDR & ~(ARCH_DMA_MINALIGN - 1),
+			    RESCUE_UBOOT1_2_LOAD_SIZE);
+		ret = do_write_for_rescure();
+		printf("self_copy %s\n", ret ? "ERROR" : "OK");
+	}
+
+}
+
 #ifdef CONFIG_ENV_OFFSET_REDUND
 static int env_nand_load(void)
 {
@@ -309,6 +365,10 @@ static int env_nand_load(void)
 	int read1_fail, read2_fail;
 	env_t *tmp_env1, *tmp_env2;
 	int ret = 0;
+	u8 board_reset_mode = get_rst_mode();
+
+	if (board_reset_mode == RES_MODE)
+		self_copy();
 
 	tmp_env1 = (env_t *)malloc(CONFIG_ENV_SIZE);
 	tmp_env2 = (env_t *)malloc(CONFIG_ENV_SIZE);
@@ -340,6 +400,7 @@ done:
  */
 static int env_nand_load(void)
 {
+	u8 board_reset_mode = get_rst_mode();
 #if !defined(ENV_IS_EMBEDDED)
 	int ret;
 	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
@@ -357,6 +418,8 @@ static int env_nand_load(void)
 		return;
 	}
 #endif
+	if (board_reset_mode == RES_MODE)
+		self_copy();
 
 	ret = readenv(CONFIG_ENV_OFFSET, (u_char *)buf);
 	if (ret) {
