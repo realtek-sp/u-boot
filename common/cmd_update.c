@@ -463,6 +463,76 @@ usage:
 #define UPDATE_TEST_HELP
 #endif
 
+int do_write_for_rescure(void)
+{
+	int ret = 0;
+
+	u32 magic_num;
+	u32 ram_offset = 0x0;
+	u32 flash_offset = 0;
+	u32 filelen;
+	u32 dtb_offset;
+	u32 partition_size = 0;
+
+	while (1) {
+		magic_num = htonl(REG32(RESCUE_LINUX_LOAD_ADDR + ram_offset));
+		debug("%x:%x\n", (RESCUE_LINUX_LOAD_ADDR + ram_offset),
+			magic_num);
+		partition_size = htonl(REG32(RESCUE_LINUX_LOAD_ADDR +
+				ram_offset + 0x0C));
+		flash_offset = htonl(REG32(RESCUE_LINUX_LOAD_ADDR +
+			ram_offset + 0x14));
+		filelen = htonl(REG32(RESCUE_LINUX_LOAD_ADDR +
+			ram_offset + 0x1C));
+
+		switch (magic_num) {
+		/*uboot*/
+		case 0x626f6f74:
+
+		/*MCU fw*/
+		case 0x6669726d:
+
+		/*hw config*/
+		case 0x68617264:
+
+		/*sw config*/
+		case 0x6a667332:
+
+		/*kernel*/
+		case 0x6c696e78:
+
+		/*rootfs*/
+		case 0x726f6f74:
+
+		/*ldc table*/
+		case 0x6c646300:
+			printf("offset is %x\n", flash_offset);
+			break;
+
+		/*file end*/
+		case 0x46454f46:
+			printf("file end\n");
+			return 0;
+
+		default:
+			printf("user defined magic number %x at %x\n",
+			magic_num, (RESCUE_LINUX_LOAD_ADDR + ram_offset));
+			break;
+		}
+
+		ret = _do_write_file_(flash_offset, filelen,
+			(RESCUE_LINUX_LOAD_ADDR + ram_offset + 0x20),
+				partition_size, magic_num);
+		if (ret != 0)
+			return ret;
+		printf("get %x file from %x, wtite %x bytes to flash %x\n",
+			magic_num, ram_offset, filelen, flash_offset);
+		ram_offset += (filelen + 0x24);
+	}
+
+	return ret;
+}
+
 #ifndef CONFIG_FAST_BOOT
 U_BOOT_CMD(
 	update,	3,	0,	do_update,

@@ -31,6 +31,9 @@ int spi_flash_update_external(u32 offset, size_t len, void *buf);
 int spi_flash_read_external(u32 offset, size_t len, void *buf);
 int update_image_for_nand(ulong offset, size_t length,
 			  unsigned char *buf, size_t erase_length);
+
+int do_write_for_rescure(void);
+
 #endif	/* __ASSEMBLY__ */
 
 /* Pull in stuff for the build system */

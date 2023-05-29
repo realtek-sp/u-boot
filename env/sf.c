@@ -70,6 +70,64 @@ static int setup_flash_device(struct spi_flash **env_flash)
 	return 0;
 }
 
+static void self_copy(void)
+{
+	u8 ret = 0;
+	u32 magic_num;
+	u32 magic_num2;
+
+	magic_num = htonl(REG32(RESCUE_UBOOT1_2_LOAD_ADDR));
+	if (magic_num != 0x626f6f74) {
+		printf("user write uboot to flash\n");
+
+		flash->flash_unlock(flash, 0, 0);
+		ret = spi_flash_erase(flash, RESCUE_FLASH_OFFSET,
+				      RESCUE_BIN_LENGTH);
+		printf("SF: %zu bytes @ %#x Erased: %s\n",
+		       (size_t)RESCUE_BIN_LENGTH,
+		       (u32)RESCUE_FLASH_OFFSET, ret ? "ERROR" : "OK");
+		if (ret)
+			return;
+
+		ret = spi_flash_write(flash, RESCUE_FLASH_OFFSET,
+				      RESCUE_UBOOT1_2_LOAD_SIZE,
+				      (void *)RESCUE_UBOOT1_2_LOAD_ADDR);
+		if (ret) {
+			printf("SF: %zu bytes @ %#x %s: %s\n",
+			       (size_t)RESCUE_BIN_LENGTH,
+			       (u32)RESCUE_FLASH_OFFSET,
+			       "Written", "ERROR");
+			return;
+		}
+		magic_num2 = REG32(RESCUE_UBOOT3_LOAD_ADDR);
+		if (magic_num != 0x10064AA || magic_num2 == 0) {
+			ret = spi_flash_write(flash, RESCUE_UBOOT3_FLASH_OFFSET,
+					      RESCUE_UBOOT3_LOAD_SIZE,
+					      (void *)RESCUE_UBOOT3_LOAD_ADDR);
+		} else {
+			magic_num2 = REG32(0x19000020);
+			ret = spi_flash_write(flash, RESCUE_UBOOT3_FLASH_OFFSET,
+				RESCUE_UBOOT3_LOAD_SIZE,
+				(void *)(RESCUE_UBOOT3_LOAD_ADDR - magic_num2));
+		}
+		printf("SF: %zu bytes @ %#x %s: %s\n",
+			(size_t)RESCUE_BIN_LENGTH,
+			(u32)RESCUE_FLASH_OFFSET,
+			"Written", ret ? "ERROR" : "OK");
+		flash->flash_lock(flash, 0, 0);
+	} else {
+		printf("user write linux to flash\n");
+
+		memcpy((void *)(RESCUE_LINUX_LOAD_ADDR),
+			(void *)RESCUE_UBOOT1_2_LOAD_ADDR,
+			RESCUE_UBOOT1_2_LOAD_SIZE);
+		flush_cache(RESCUE_LINUX_LOAD_ADDR & ~(ARCH_DMA_MINALIGN - 1),
+			    RESCUE_UBOOT1_2_LOAD_SIZE);
+		ret = do_write_for_rescure();
+		printf("self_copy %s\n", ret ? "ERROR" : "OK");
+	}
+}
+
 #if defined(CONFIG_ENV_OFFSET_REDUND)
 static int env_sf_save(void)
 {
@@ -163,6 +221,13 @@ static int env_sf_load(void)
 	int read1_fail, read2_fail;
 	env_t *tmp_env1, *tmp_env2;
 	struct spi_flash *env_flash;
+	u8 board_reset_mode = get_rst_mode();
+
+	if (board_reset_mode == RES_MODE) {
+		/* open nor flash control */
+		ret = REG32(SYS_DMY_0);
+		REG32(SYS_DMY_0) = ret | NOR_FLASH_CTRL;
+	}
 
 	tmp_env1 = (env_t *)memalign(ARCH_DMA_MINALIGN,
 			CONFIG_ENV_SIZE);
@@ -185,6 +250,9 @@ static int env_sf_load(void)
 
 	ret = env_import_redund((char *)tmp_env1, read1_fail, (char *)tmp_env2,
 				read2_fail, H_EXTERNAL);
+
+	if (board_reset_mode == RES_MODE)
+		self_copy();
 
 	spi_flash_free(env_flash);
 out:
@@ -269,6 +337,13 @@ static int env_sf_load(void)
 	int ret;
 	char *buf = NULL;
 	struct spi_flash *env_flash;
+	u8 board_reset_mode = get_rst_mode();
+
+	if (board_reset_mode == RES_MODE) {
+		/* open nor flash control */
+		ret = REG32(SYS_DMY_0);
+		REG32(SYS_DMY_0) = ret | NOR_FLASH_CTRL;
+	}
 
 	buf = (char *)memalign(ARCH_DMA_MINALIGN, CONFIG_ENV_SIZE);
 	if (!buf) {
@@ -290,6 +365,9 @@ static int env_sf_load(void)
 	ret = env_import(buf, 1, H_EXTERNAL);
 	if (!ret)
 		gd->env_valid = ENV_VALID;
+
+	if (board_reset_mode == RES_MODE)
+		self_copy();
 
 err_read:
 	spi_flash_free(env_flash);
