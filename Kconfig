@@ -46,6 +46,49 @@ config TARGET_FPGA
 	help
 	  Enable option for FPGA,
 	  not for ASIC
+
+config TARGET_EMULATOR
+	bool "emulator"
+	help
+	  Enable option for emulator,
+	  not for ASIC
+endchoice
+
+config RTS_WATCHDOG
+	bool "Enable Watchdog"
+	default n
+	help
+	  Enable watchdog for rts3917
+
+config RTS_WATCHDOG_TIMEOUT
+	int "Watchdog timeout(s)"
+	depends on RTS_WATCHDOG
+	default 32
+	help
+	  set watchdog timeout, range from 1 to 64
+
+source "board/realtek/Kconfig.board"
+
+choice
+	prompt "Environment Variables Config"
+	default ENV_IN_FLASH
+	help
+	  Select where the environment variables are saved, support in
+	  NOR/NAND flash and in RAM.
+
+config ENV_IN_FLASH
+	bool "Environment variables in flash"
+	select ENV_IS_IN_SPI_FLASH if RTS_NOR_BOOT
+	select ENV_IS_IN_NAND if RTS_NAND_BOOT
+	help
+	  Enable this option to save environment variables in NOR/NAND
+	  flash.
+
+config ENV_IN_RAM
+	bool "Environmemt variables in ram"
+	help
+	  Enable this option to keep environment variables in RAM.
+
 endchoice
 
 choice
@@ -65,8 +108,119 @@ config CPU_800M
 	help
 	  Set cpu clock to 800MHz.
 endchoice
+
+config SELF_EXTRACTING
+	bool "Uboot Self-extracting"
+	default n
+	help
+	  Uboot self-extracting configuration, for minimum the size
+	  of code
+
+config FAST_BOOT
+	bool "system fast boot"
+	depends on BOARD_RTS3917
+	default n
+	help
+	  system fast boot configuration.
+
+config UPDATE_KERNEL_FROM_SD
+	bool "Update kernel from SD"
+	select RTS_MMC
+	select FS_FAT
+	select DOS_PARTITION
+	default n
+	help
+	  Update kernel from SD
+
+menu "Crypto Boot Config"
+
+config CRYPTO_BOOT
+	bool "Enable crypto boot"
+	default n
+	help
+	  Enable this option for crypto boot kernel.
+	  with this option, uboot will des-crypto
+	  kernel image
+
+config CRYPTO_UPDATE
+	depends on CRYPTO_BOOT
+	bool "Enable crypto update"
+	default n
+	help
+	  Enable this option for crypto update kernel.
+
+choice
+	prompt "AES mode of operation"
+	depends on CRYPTO_BOOT && (BOARD_RTS3917 || BOARD_RTS3921)
+	default ECB_MODE
+	help
+	  Select AES operation mode.
+
+config ECB_MODE
+	bool "ECB mode"
+	help
+	  Select ECB mode for AES operation.
+
+config CBC_MODE
+	bool "CBC mode"
+	help
+	  Select CBC mode for AES operation.
+
+endchoice
+
+choice
+	prompt "AES mode of length"
+	depends on CRYPTO_BOOT && (BOARD_RTS3917 || BOARD_RTS3921)
+	default AES_128
+	help
+	  Select AES mode.
+
+config AES_128
+	bool "128 bits"
+	help
+	  Select 128 bits length of AES key.
+
+config AES_256
+	bool "256 bits"
+	help
+	  Select 256 bits length of AES key.
+
+endchoice
 endmenu
-source "board/realtek/Kconfig.board"
+
+config DO_IMAGE_CRC
+	tristate "Do Image CRC Check"
+	depends on !FAST_BOOT
+	default y
+	help
+	  Set do image CRC check option before load image
+
+config DUAL_KERNEL_LOAD_CHECK
+	bool "Enable Dual Kernel Load Check"
+	depends on (BOARD_RTS3917 || BOARD_RTS3921) && !FAST_BOOT
+	select CMD_ECHO
+	select CMD_ITEST
+	select CMD_SOURCE
+	select CMD_SETEXPR
+	select HUSH_PARSER
+	select SYS_REDUNDAND_ENVIRONMENT
+	default n
+	help
+	  Create rauc env and check which kernel to load
+
+config DIRECT_UPDATE_BY_DFU
+	bool "Direct update by dfu"
+	select CMD_DFU
+	select USB
+	default n
+
+config BOOT_COUNT_REG
+	hex "Boot Count Register"
+	depends on DIRECT_UPDATE_BY_DFU
+	default 0x18860048
+	help
+	  Register to store boot count.
+endmenu
 
 menu "General setup"
 

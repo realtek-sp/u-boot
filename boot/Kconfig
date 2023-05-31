@@ -1091,7 +1091,6 @@ config RTS_NOR_BOOT
 	select SPI
 	select DM_SPI
 	select DM_SPI_FLASH
-	select ENV_IS_IN_SPI_FLASH
 	default y
 	help
 	  Enabling this will make a U-Boot binary that is capable of being
@@ -1106,7 +1105,6 @@ config RTS_NAND_BOOT
 	select MTD_RAW_NAND
 	select RTS_SPI_NAND_FLASH
 	select DM_MTD
-	select ENV_IS_IN_NAND
 	default n
 	imply MTD_RAW_NAND
 	help
