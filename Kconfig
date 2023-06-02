@@ -111,6 +111,7 @@ endchoice
 
 config SELF_EXTRACTING
 	bool "Uboot Self-extracting"
+	select LZMA
 	default n
 	help
 	  Uboot self-extracting configuration, for minimum the size

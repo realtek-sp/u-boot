@@ -1116,6 +1116,10 @@ endif
 	@touch $@
 
 all: .binman_stamp
+ifdef CONFIG_SELF_EXTRACTING
+	chmod +x $(srctree)/decompress/generate.sh
+	$(srctree)/decompress/generate.sh
+endif
 	chmod +x $(srctree)/ram_init/generate.sh
 	$(srctree)/ram_init/generate.sh
 ifeq ($(CONFIG_DEPRECATED),y)

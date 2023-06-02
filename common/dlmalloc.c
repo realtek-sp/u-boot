@@ -1304,12 +1304,12 @@ Void_t* mALLOc(bytes) size_t bytes;
   mbinptr q;                         /* misc temp */
 
   INTERNAL_SIZE_T nb;
-
+#ifndef SELF_EXTRACT_BUILD
 #if CONFIG_VAL(SYS_MALLOC_F_LEN)
 	if (!(gd->flags & GD_FLG_FULL_MALLOC_INIT))
 		return malloc_simple(bytes);
 #endif
-
+#endif
   if (CONFIG_IS_ENABLED(UNIT_TEST) && malloc_testing) {
     if (--malloc_max_allocs < 0)
       return NULL;
@@ -1585,7 +1585,7 @@ void fREe(mem) Void_t* mem;
   mchunkptr bck;       /* misc temp for linking */
   mchunkptr fwd;       /* misc temp for linking */
   int       islr;      /* track whether merging with last_remainder */
-
+#ifndef SELF_EXTRACT_BUILD
 #if CONFIG_VAL(SYS_MALLOC_F_LEN)
 	/* free() is a no-op - all the memory will be freed on relocation */
 	if (!(gd->flags & GD_FLG_FULL_MALLOC_INIT)) {
@@ -1593,7 +1593,7 @@ void fREe(mem) Void_t* mem;
 		return;
 	}
 #endif
-
+#endif
   if (mem == NULL)                              /* free(0) has no effect */
     return;
 
@@ -2019,7 +2019,7 @@ Void_t* mEMALIGn(alignment, bytes) size_t alignment; size_t bytes;
     /*
      * m might not be the same as before. Validate that the previous value of
      * extra still works for the current value of m.
-     * If (!m), extra2=alignment so 
+     * If (!m), extra2=alignment so
      */
     if (m) {
       extra2 = alignment - (((unsigned long)(m)) % alignment);
