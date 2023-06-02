@@ -35,6 +35,8 @@ int spi_flash_read_external(u32 offset, size_t len, void *buf);
 int update_image_for_nand(ulong offset, size_t length,
 			  unsigned char *buf, size_t erase_length);
 int update_image_to_nand(ulong offset, size_t length, unsigned char *buf);
+int get_data_length_from_nand(ulong offset, ulong *data_length);
+int copy_imagedata_to_ram(ulong offset, ulong ram_addr, ulong data_length);
 
 int do_write_for_rescure(void);
 

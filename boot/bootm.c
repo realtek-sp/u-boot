@@ -899,6 +899,9 @@ static const void *boot_get_kernel(struct cmd_tbl *cmdtp, int flag, int argc,
 	if (CONFIG_IS_ENABLED(CMD_BOOTM_PRE_LOAD))
 		img_addr += image_load_offset;
 
+	/* copy from dataflash if needed */
+	img_addr = genimg_get_image(img_addr);
+
 	bootstage_mark(BOOTSTAGE_ID_CHECK_MAGIC);
 
 	/* check image type, for FIT images get FIT kernel node */

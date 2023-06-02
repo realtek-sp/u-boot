@@ -199,6 +199,93 @@ void memmove_wd(void *to, void *from, size_t len, ulong chunksz)
 }
 
 /**
+ * genimg_get_image - get image from special storage (if necessary)
+ * @img_addr: image start address
+ *
+ * genimg_get_image() checks if provided image start address is located
+ * in a dataflash storage. If so, image is moved to a system RAM memory.
+ *
+ * returns:
+ *     image start address after possible relocation from special storage
+ */
+ulong genimg_get_image(ulong img_addr)
+{
+	ulong ram_addr = img_addr;
+
+	printf("img_addr = %#lx\n", ram_addr);
+
+	if (img_addr < 0x80000000) {
+#ifdef CONFIG_RTS_SPI_NAND_FLASH
+		ulong data_len;
+
+		get_data_length_from_nand(img_addr & 0x1fffffff, &data_len);
+
+		printf("nand read: get data len is %#lx\n", data_len);
+		ram_addr = CONFIG_SYS_LOAD_ADDR;
+		copy_imagedata_to_ram(img_addr & 0x1fffffff,
+				      ram_addr, data_len);
+#endif
+#ifdef CONFIG_RTS_EMMC_BOOT
+		ulong data_len;
+
+		if (img_addr < 0x80000000) {
+			get_data_length_from_mmc(img_addr, &data_len);
+			printf("emmc get data len is %x\n", data_len);
+			ram_addr = CONFIG_SYS_LOAD_ADDR;
+			copy_mmcdata_to_ram(img_addr, ram_addr, data_len);
+		}
+#endif
+	}
+
+#if IMAGE_ENABLE_FIT
+#ifdef CONFIG_RTS_NOR_BOOT
+	ulong h_size, d_size;
+
+	if (1) {
+		void *buf;
+
+		/* ger RAM address */
+		ram_addr = CONFIG_SYS_LOAD_ADDR;
+
+		/* get header size */
+		h_size = image_get_header_size();
+		if (sizeof(struct fdt_header) > h_size)
+			h_size = sizeof(struct fdt_header);
+
+		/* read in header */
+		debug("Reading image header from dataflash address");
+		debug("%08lx to RAM address %08lx\n", img_addr, ram_addr);
+
+		buf = map_sysmem(ram_addr, 0);
+		img_addr += 0x04000000;
+		dma_copy(img_addr, buf, h_size);
+
+		/* get data size */
+		switch (genimg_get_format(buf)) {
+		case IMAGE_FORMAT_FIT:
+			d_size = fit_get_size(buf) - h_size;
+			debug("FIT/FDT format image found at 0x%08lx,");
+			debug("size 0x%08lx\n", ram_addr, d_size);
+			break;
+		default:
+			printf("No valid image found at 0x%08lx\n",
+				img_addr);
+			return ram_addr;
+		}
+
+		/* read in image data */
+		debug("Reading image remaining data from dataflash address, ");
+		debug("%08lx to RAM address %08lx\n", img_addr + h_size,
+			ram_addr + h_size);
+
+		dma_copy(img_addr + h_size, (char *)(buf + h_size), d_size);
+	}
+#endif /* CONFIG_HAS_DATAFLASH */
+#endif
+	return ram_addr;
+}
+
+/**
  * genimg_get_kernel_addr_fit - get the real kernel address and return 2
  *                              FIT strings
  * @img_addr: a string might contain real image address

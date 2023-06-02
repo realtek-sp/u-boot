@@ -607,7 +607,7 @@ int boot_get_setup(struct bootm_headers *images, uint8_t arch, ulong *setup_star
 #define IMAGE_FORMAT_LEGACY	0x01	/* legacy image_header based format */
 #define IMAGE_FORMAT_FIT	0x02	/* new, libfdt based format */
 #define IMAGE_FORMAT_ANDROID	0x03	/* Android boot image */
-
+ulong genimg_get_image(ulong img_addr);
 ulong genimg_get_kernel_addr_fit(char * const img_addr,
 			         const char **fit_uname_config,
 			         const char **fit_uname_kernel);
