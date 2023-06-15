@@ -111,3 +111,4 @@ obj-$(CONFIG_SCP03) += scp03.o
 obj-$(CONFIG_QFW) += qfw.o
 obj-$(CONFIG_CMD_NET) += cmd_update.o
 obj-$(CONFIG_RTS_SPI_NAND_FLASH) += nand_ops.o
+obj-$(CONFIG_RTS_EMMC_BOOT) += mmc_ops.o

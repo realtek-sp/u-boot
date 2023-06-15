@@ -126,7 +126,7 @@ config FAST_BOOT
 
 config UPDATE_KERNEL_FROM_SD
 	bool "Update kernel from SD"
-	select RTS_MMC
+	select MMC_RTS
 	select FS_FAT
 	select DOS_PARTITION
 	default n

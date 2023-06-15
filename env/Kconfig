@@ -193,6 +193,7 @@ config ENV_IS_IN_MMC
 	default y if MX6SX || MX7D
 	default y if TEGRA30 || TEGRA124
 	default y if TEGRA_ARMV8_COMMON
+	default y if RTS_EMMC_BOOT
 	help
 	  Define this if you have an MMC device which you want to use for the
 	  environment.
@@ -564,7 +565,7 @@ config ENV_OFFSET
 	default 0x260000 if ARCH_OMAP2PLUS
 	default 0x1080000 if MICROBLAZE && ENV_IS_IN_SPI_FLASH
 	default 0x80000 if ENV_IS_IN_SPI_FLASH
-	default 0x80000 if ENV_IS_IN_NAND
+	default 0x80000 if ENV_IS_IN_NAND || ENV_IS_IN_MMC
 	help
 	  Offset from the start of the device (or partition)
 

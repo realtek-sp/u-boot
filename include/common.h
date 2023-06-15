@@ -40,6 +40,10 @@ int copy_imagedata_to_ram(ulong offset, ulong ram_addr, ulong data_length);
 
 int do_write_for_rescure(void);
 
+/*mmc_ops.c*/
+int get_data_length_from_mmc(ulong offset, ulong *data_length);
+int copy_mmcdata_to_ram(ulong offset, ulong ram_addr, ulong data_length);
+
 #endif	/* __ASSEMBLY__ */
 
 /* Pull in stuff for the build system */

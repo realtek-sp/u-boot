@@ -148,10 +148,10 @@ static int _do_write_file_(u32 offset, u32 len, u32 loadaddr,
 #ifdef CONFIG_RTS_EMMC_BOOT
 	mmc = find_mmc_device(dev);
 	if ((strcmp(tmpfile, "/u-boot.bin") == 0) || magic_num == 0x626f6f74) {
-		blk_select_hwpart_devnum(IF_TYPE_MMC, dev, 1);
+		blk_select_hwpart_devnum(UCLASS_MMC, dev, 1);
 		mmc_set_part_conf(mmc, 0, 1, 1);
 	} else {
-		blk_select_hwpart_devnum(IF_TYPE_MMC, 0, 0);
+		blk_select_hwpart_devnum(UCLASS_MMC, 0, 0);
 		mmc_set_part_conf(mmc, 0, 0, 0);
 	}
 
@@ -171,7 +171,7 @@ static int _do_write_file_(u32 offset, u32 len, u32 loadaddr,
 	else
 		ret = -1;
 
-	blk_select_hwpart_devnum(IF_TYPE_MMC, dev, 1);
+	blk_select_hwpart_devnum(UCLASS_MMC, dev, 1);
 	mmc_set_part_conf(mmc, 0, 1, 1);
 #endif
 

@@ -25,7 +25,7 @@
 #define STR(X) __STR(X)
 
 DECLARE_GLOBAL_DATA_PTR;
-
+static void self_copy(void);
 /*
  * In case the environment is redundant, stored in eMMC hardware boot
  * partition and the environment and redundant environment offsets are
@@ -193,7 +193,9 @@ static inline int write_env(struct mmc *mmc, unsigned long size,
 	blk_start	= ALIGN(offset, mmc->write_bl_len) / mmc->write_bl_len;
 	blk_cnt		= ALIGN(size, mmc->write_bl_len) / mmc->write_bl_len;
 
+	mmc_set_part_conf(mmc, 0, 1, 1);
 	n = blk_dwrite(desc, blk_start, blk_cnt, (u_char *)buffer);
+	mmc_set_part_conf(mmc, 0, 1, 0);
 
 	return (n == blk_cnt) ? 0 : -1;
 }
@@ -263,7 +265,9 @@ static inline int erase_env(struct mmc *mmc, unsigned long size,
 	blk_start = ALIGN_DOWN(offset, erase_size) / desc->blksz;
 	blk_cnt = ALIGN(size, erase_size) / desc->blksz;
 
+	mmc_set_part_conf(mmc, 0, 1, 1);
 	n = blk_derase(desc, blk_start, blk_cnt);
+	mmc_set_part_conf(mmc, 0, 1, 0);
 	printf("%d blocks erased at 0x%x: %s\n", n, blk_start,
 	       (n == blk_cnt) ? "OK" : "ERROR");
 
@@ -324,7 +328,9 @@ static inline int read_env(struct mmc *mmc, unsigned long size,
 	blk_start	= ALIGN(offset, mmc->read_bl_len) / mmc->read_bl_len;
 	blk_cnt		= ALIGN(size, mmc->read_bl_len) / mmc->read_bl_len;
 
+	mmc_set_part_conf(mmc, 0, 1, 1);
 	n = blk_dread(desc, blk_start, blk_cnt, (uchar *)buffer);
+	mmc_set_part_conf(mmc, 0, 1, 0);
 
 	return (n == blk_cnt) ? 0 : -1;
 }
@@ -390,6 +396,7 @@ err:
 #else /* ! CONFIG_ENV_OFFSET_REDUND */
 static int env_mmc_load(void)
 {
+	u8 board_reset_mode = get_rst_mode();
 #if !defined(ENV_IS_EMBEDDED)
 	ALLOC_CACHE_ALIGN_BUFFER(char, buf, CONFIG_ENV_SIZE);
 	struct mmc *mmc;
@@ -424,6 +431,8 @@ static int env_mmc_load(void)
 		gd->env_addr = (ulong)&ep->data;
 	}
 
+	if (board_reset_mode == RES_MODE)
+		self_copy();
 fini:
 	fini_mmc_for_env(mmc);
 err:
@@ -433,6 +442,42 @@ err:
 	return ret;
 }
 #endif /* CONFIG_ENV_OFFSET_REDUND */
+
+void self_copy(void)
+{
+	struct mmc *mmc;
+	u32 n;
+	int dev = mmc_get_env_dev();
+	u32 offset = 0;
+
+	mmc = find_mmc_device(dev);
+	blk_select_hwpart_devnum(UCLASS_MMC, dev, 1);
+	mmc_set_part_conf(mmc, 0, 1, 1);
+
+	if (mmc_getwp(mmc) == 1) {
+		printf("Error: card is write protected!\n");
+		return;
+	}
+
+	memset((void *)RESCUE_EMMC_DDR_MEM, 0, RESCUE_BIN_LENGTH);
+	memcpy((void *)(RESCUE_EMMC_DDR_MEM), RESCUE_UBOOT1_2_LOAD_ADDR,
+		RESCUE_UBOOT1_2_LOAD_SIZE);
+#ifdef CONFIG_FIT
+	offset = REG32(RESCUE_UBOOT1_2_LOAD_ADDR + 32);
+#endif
+	memcpy((void *)(RESCUE_EMMC_DDR_MEM + RESCUE_UBOOT1_2_LOAD_SIZE +
+		offset), RESCUE_UBOOT3_LOAD_ADDR, RESCUE_UBOOT3_LOAD_SIZE);
+
+	blk_derase(mmc_get_blk_desc(mmc), 0, (RESCUE_BIN_LENGTH >> 9));
+	n = blk_dwrite(mmc_get_blk_desc(mmc), 0, (RESCUE_BIN_LENGTH >> 9),
+		(void *)RESCUE_EMMC_DDR_MEM);
+	if (n != (RESCUE_BIN_LENGTH >> 9)) {
+		printf("Error: write uboot error\n");
+		return;
+	}
+
+	printf("self copy OK\n\n");
+}
 
 U_BOOT_ENV_LOCATION(mmc) = {
 	.location	= ENVL_MMC,
