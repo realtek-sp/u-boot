@@ -1673,6 +1673,7 @@ struct spi_slave *spi_setup_slave_fdt(const void *blob, int slave_node,
 	return NULL;
 }
 
+#if CONFIG_IS_ENABLED(OF_CONTROL)
 static int rts_dm_spi_of_to_plat(struct udevice *udev)
 {
 	struct rts_spi_platdata *plat = udev->plat_;
@@ -1686,6 +1687,7 @@ static int rts_dm_spi_of_to_plat(struct udevice *udev)
 						   "spi-deactivate-delay", 0);
 	return 0;
 }
+#endif
 
 static int rts_dm_spi_probe(struct udevice *udev)
 {
