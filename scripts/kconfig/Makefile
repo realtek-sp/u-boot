@@ -41,6 +41,14 @@ config: $(obj)/conf
 nconfig: $(obj)/nconf
 	$< $(silent) $(Kconfig)
 
+# This has become an internal implementation detail and is now deprecated
+# for external use.
+syncconfig: $(obj)/conf
+	$(Q)mkdir -p include/config include/generated
+	$(Q)scripts/addconf.py
+	$< $(silent) --$@ $(Kconfig)
+	@scripts/createLink.sh
+
 build_menuconfig: $(obj)/mconf
 
 build_nconfig: $(obj)/nconf
@@ -70,7 +78,7 @@ localyesconfig localmodconfig: $(obj)/conf
 #  syncconfig has become an internal implementation detail and is now
 #  deprecated for external use
 simple-targets := oldconfig allnoconfig allyesconfig allmodconfig \
-	alldefconfig randconfig listnewconfig olddefconfig syncconfig
+	alldefconfig randconfig listnewconfig olddefconfig
 PHONY += $(simple-targets)
 
 $(simple-targets): $(obj)/conf

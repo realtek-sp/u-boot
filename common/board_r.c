@@ -497,7 +497,39 @@ static int initr_get_kernel_offset(void)
 			return -1;
 	}
 
+#ifdef CONFIG_DUAL_KERNEL_LOAD_CHECK
+	env_set_hex("kerneladdr_a", offset);
+	char *boot_order;
+	char *boot_left;
+	boot_order = env_get("BOOT_ORDER");
+	if (boot_order) {
+		if (strcmp(boot_order, "A B") == 0) {
+			boot_left = env_get("BOOT_A_LEFT");
+			if (boot_left && strcmp(boot_left, "0") == 0)
+				goto read_b;
+		} else {
+			boot_left = env_get("BOOT_B_LEFT");
+			if (boot_left && strcmp(boot_left, "0") != 0)
+				goto read_b;
+		}
+	}
+	return 0;
+read_b:
+	nodeoffset_s = fdt_node_offset_by_label(working_fdt,
+						nodeoffset, "kernel_b");
+	if (!(nodeoffset_s > 0))
+		return -1;
+	nodep = fdt_getprop(working_fdt, nodeoffset_s, prop, &len);
+	if (nodep && len > 0) {
+		offset = get_dtb_data_of_offset(nodep, len);
+		if (offset < 0)
+			return -1;
+	}
+
+	env_set_hex("kerneladdr_b", offset);
+#else
 	env_set_hex("kernel_offset", offset);
+#endif
 	return 0;
 }
 #endif

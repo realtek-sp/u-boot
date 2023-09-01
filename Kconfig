@@ -209,6 +209,9 @@ config DUAL_KERNEL_LOAD_CHECK
 	help
 	  Create rauc env and check which kernel to load
 
+config CHECK_DUALKERNEL_LOAD
+	bool
+
 config DIRECT_UPDATE_BY_DFU
 	bool "Direct update by dfu"
 	select CMD_DFU

@@ -9,6 +9,7 @@
 #define _SHEIPA_H_
 
 #include <generated/autoconf.h>
+#include <generated/map.h>
 #include "bspchip.h"
 
 #define CONFIG_ETHADDR		DE:AD:BE:EF:01:01	/* Ethernet address */
@@ -43,23 +44,23 @@
 					"sf read "a" "b" "c";"		\
 					"bootm "a""
 
-#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${fdtcontroladdr}"
+#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset}"
 #else
 #ifdef CONFIG_TARGET_EMULATOR
-#define CONFIG_BOOTCOMMAND		"bootm 0x81000000 - 0x80100000"
+#define CONFIG_BOOTCOMMAND		"bootm 0x81000000"
 #else
 #ifdef CONFIG_FAST_BOOT
-#define CONFIG_BOOTCOMMAND		"bootm 0xa0000 - 0x80100000"
+#define CONFIG_BOOTCOMMAND		"bootm 0xa0000"
 #else
-#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${fdtcontroladdr}"
+#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset}"
 #endif
 #endif
 #endif
 #else
 #ifdef CONFIG_FAST_BOOT
-#define CONFIG_BOOTCOMMAND		"bootm 0x100000 - 0x80100000"
+#define CONFIG_BOOTCOMMAND		"bootm 0x100000"
 #else
-#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset} - ${fdtcontroladdr}"
+#define CONFIG_BOOTCOMMAND		"bootm ${kernel_offset}"
 #endif
 #endif
 
