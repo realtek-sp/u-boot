@@ -398,6 +398,14 @@ static int initr_onenand(void)
 }
 #endif
 
+#ifdef CONFIG_CRYPTO_BOOT
+static int initr_crypto_boot(void)
+{
+	crypto_init();
+	return 0;
+}
+#endif
+
 #ifdef CONFIG_MMC
 static int initr_mmc(void)
 {
@@ -943,6 +951,9 @@ static init_fnc_t init_sequence_r[] = {
 #endif
 #ifdef CONFIG_CMD_ONENAND
 	initr_onenand,
+#endif
+#ifdef CONFIG_CRYPTO_BOOT
+	initr_crypto_boot,
 #endif
 #ifdef CONFIG_MMC
 	initr_mmc,

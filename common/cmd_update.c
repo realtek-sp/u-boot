@@ -14,6 +14,10 @@
 #include <dfu.h>
 #include <cpu_func.h>
 #include <dfu.h>
+#include <configs/rlxboard.h>
+#include <fat.h>
+#include <fs.h>
+#include <mmc.h>
 
 #define GETMEM(addr)	(*(volatile u32 *)(addr))
 static char *tmpfile;
@@ -554,6 +558,88 @@ int do_write_for_rescure(void)
 
 	return ret;
 }
+
+#ifdef CONFIG_CRYPTO_BOOT
+int load_key_from_sd(void)
+{
+	unsigned long addr;
+	const char *filename;
+	unsigned long bytes;
+	unsigned long pos;
+	int len_read;
+	unsigned long time;
+	int ret;
+	int *temp = &len_read;
+
+	if (fs_set_blk_dev("mmc", "0", FS_TYPE_FAT))
+		if (fs_set_blk_dev("mmc", "1", FS_TYPE_FAT))
+			return 0;
+
+	addr = CONFIG_SYS_LOAD_ADDR;
+	printf("load key from sd addr %lx\n", addr);
+
+	filename = "ipcam_crypto.bin";
+
+	bytes = 0;
+	pos = 0;
+	time = get_timer(0);
+	ret = fs_read(filename, addr, pos, bytes, (loff_t *)temp);
+	printf("in load_key_from_sd\n");
+	time = get_timer(time);
+	if (ret < 0)
+		return 0;
+
+	printf("%d bytes read in %lu ms", len_read, time);
+	if (time > 0) {
+		puts(" (");
+		print_size(len_read / time * 1000, "/s");
+		puts(")");
+	}
+	puts("\n");
+
+	return 0;
+}
+
+int load_iv_from_sd(void)
+{
+	unsigned long addr;
+	const char *filename;
+	unsigned long bytes;
+	unsigned long pos;
+	int len_read;
+	unsigned long time;
+	int ret;
+	int *temp = &len_read;
+
+	if (fs_set_blk_dev("mmc", "0", FS_TYPE_FAT))
+		if (fs_set_blk_dev("mmc", "1", FS_TYPE_FAT))
+			return 0;
+
+	addr = CONFIG_SYS_LOAD_ADDR;
+	printf("load iv from sd addr %lx\n", addr);
+
+	filename = "ipcam_crypto_iv.bin";
+
+	bytes = 0;
+	pos = 0;
+	time = get_timer(0);
+	ret = fs_read(filename, addr, pos, bytes, (loff_t *)temp);
+	printf("in load_iv_from_sd\n");
+	time = get_timer(time);
+	if (ret < 0)
+		return 0;
+
+	printf("%d bytes read in %lu ms", len_read, time);
+	if (time > 0) {
+		puts(" (");
+		print_size(len_read / time * 1000, "/s");
+		puts(")");
+	}
+	puts("\n");
+
+	return 0;
+}
+#endif
 
 #ifndef CONFIG_FAST_BOOT
 U_BOOT_CMD(

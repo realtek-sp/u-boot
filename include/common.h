@@ -16,6 +16,9 @@
 #include <config.h>
 #include <errno.h>
 #include <time.h>
+#include <asm-offsets.h>
+#include <linux/bitops.h>
+#include <linux/bug.h>
 #include <linux/delay.h>
 #include <linux/types.h>
 #include <linux/printk.h>
@@ -26,12 +29,21 @@
 #include <asm/u-boot.h> /* boot information for Linux kernel */
 #include <asm/global_data.h>	/* global data used for startup functions */
 #include <vsprintf.h>
+#include <display_options.h>
 
 u8 get_rst_mode(void);
 int exit_spi_qpi_mode(void);
 
 int spi_flash_update_external(u32 offset, size_t len, void *buf);
 int spi_flash_read_external(u32 offset, size_t len, void *buf);
+
+#ifdef CONFIG_CRYPTO_BOOT
+int crypto_init(void);
+extern int rlx_aes_ecb_encrypt(u8 *dst, u8 *src, unsigned int nbytes);
+extern int rlx_aes_ecb_decrypt(u8 *dst, u8 *src, unsigned int nbytes);
+int load_key_from_sd(void);
+int load_iv_from_sd(void);
+#endif
 
 /* nand_ops.c */
 int update_image_for_nand(ulong offset, size_t length,

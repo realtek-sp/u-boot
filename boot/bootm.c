@@ -410,6 +410,9 @@ static int bootm_load_os(struct bootm_headers *images, int boot_progress)
 	bool no_overlap;
 	void *load_buf, *image_buf;
 	int err;
+#if defined(CONFIG_CRYPTO_BOOT)
+	int ret;
+#endif
 
 	load_buf = map_sysmem(load, 0);
 	image_buf = map_sysmem(os.image_start, image_len);
@@ -426,7 +429,11 @@ static int bootm_load_os(struct bootm_headers *images, int boot_progress)
 	images->os.image_len = load_end - load;
 
 	flush_cache(flush_start, ALIGN(load_end, ARCH_DMA_MINALIGN) - flush_start);
-
+#ifdef CONFIG_CRYPTO_BOOT
+	ret = rlx_aes_ecb_decrypt((void *)load, (void *)load, image_len);
+	if (ret)
+		return BOOTM_ERR_RESET;
+#endif
 	debug("   kernel loaded at 0x%08lx, end = 0x%08lx\n", load, load_end);
 	bootstage_mark(BOOTSTAGE_ID_KERNEL_LOADED);
 

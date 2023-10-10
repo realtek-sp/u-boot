@@ -1,6 +1,8 @@
 #ifndef _RTS_CRYTO_H_
 #define _RTS_CRYTO_H_
 
+#include <asm/cache.h>
+
 #define RLX_REG_KEY_DATA0		0x00
 #define RLX_REG_KEY_DATA1		0x04
 #define RLX_REG_KEY_DATA2		0x08
@@ -48,8 +50,6 @@
 
 #define AES_BLOCK_SIZE			16
 #define DES_BLOCK_SIZE			8
-
-#define BIT(x)			(1 << (x))
 
 #define FLAGS_ENCRYPT		BIT(0)
 #define FLAGS_DECRYPT		BIT(1)
