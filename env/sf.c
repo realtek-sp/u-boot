@@ -177,6 +177,7 @@ static int env_sf_save(void)
 	sector = DIV_ROUND_UP(CONFIG_ENV_SIZE, sect_size);
 
 	puts("Erasing SPI flash...");
+	env_flash->flash_unlock(env_flash, 0, 0);
 	ret = spi_flash_erase(env_flash, env_new_offset,
 				sector * sect_size);
 	if (ret)
@@ -208,6 +209,7 @@ static int env_sf_save(void)
 	printf("Valid environment: %d\n", (int)gd->env_valid);
 
 done:
+	env_flash->flash_lock(env_flash, 0, 0);
 	spi_flash_free(env_flash);
 
 	if (saved_buffer)
