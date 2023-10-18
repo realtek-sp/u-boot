@@ -49,6 +49,7 @@ int copy_mmcdata_to_ram(ulong offset, ulong ram_addr, ulong data_length);
 int fdt_node_offset_by_label(const void *fdt, int startoffset,
 				  const char *label);
 u32 get_dtb_data_of_offset(const void *data, int len);
+void set_boot_left_reg_when_press_key(void);
 #endif	/* __ASSEMBLY__ */
 
 /* Pull in stuff for the build system */

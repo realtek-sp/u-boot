@@ -39,6 +39,12 @@ const char default_environment[] = {
 #ifdef	CONFIG_ENV_FLAGS_LIST_DEFAULT
 	ENV_FLAGS_VAR "=" CONFIG_ENV_FLAGS_LIST_DEFAULT "\0"
 #endif
+#ifdef	CONFIG_DUAL_KERNEL_LOAD_CHECK
+	"BOOT_ORDER=A B\0"
+#endif
+#ifdef CONFIG_DUAL_IMAGE_REG_ADDR
+	"dual_image_reg_addr="  __stringify(CONFIG_DUAL_IMAGE_REG_ADDR)"\0"
+#endif
 #ifdef	CONFIG_CHECK_DUALKERNEL_LOAD
 	"bootcheck="	CONFIG_CHECK_DUALKERNEL_LOAD			"\0"
 #endif

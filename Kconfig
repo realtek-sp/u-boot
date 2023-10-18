@@ -209,6 +209,13 @@ config DUAL_KERNEL_LOAD_CHECK
 	help
 	  Create rauc env and check which kernel to load
 
+config DUAL_IMAGE_REG_ADDR
+	hex "Boot Left Register"
+	depends on DUAL_KERNEL_LOAD_CHECK
+	default 0x1886004c
+	help
+	  Register to store boot left count for partition A&B.
+
 config CHECK_DUALKERNEL_LOAD
 	bool
 
@@ -221,7 +228,7 @@ config DIRECT_UPDATE_BY_DFU
 config BOOT_COUNT_REG
 	hex "Boot Count Register"
 	depends on DIRECT_UPDATE_BY_DFU
-	default 0x18860048
+	default 0x1886004c
 	help
 	  Register to store boot count.
 endmenu

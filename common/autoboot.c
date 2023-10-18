@@ -402,6 +402,9 @@ static int abortboot_single_key(int bootdelay)
 
 	putc('\n');
 
+	if (abort && IS_ENABLED(CONFIG_DUAL_KERNEL_LOAD_CHECK))
+		set_boot_left_reg_when_press_key();
+
 	return abort;
 }
 

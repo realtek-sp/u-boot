@@ -43,6 +43,26 @@ void reset_cpu(void)
 		;
 }
 
+void set_boot_left_reg_when_press_key(void)
+{
+	int a_left = 0;
+	int b_left = 0;
+	char *boot_order;
+	const char *reg_addr_s;
+	u32 reg_addr;
+
+	reg_addr_s = env_get("dual_image_reg_addr");
+	reg_addr = simple_strtoul(reg_addr_s, NULL, 16);
+
+	boot_order = env_get("BOOT_ORDER");
+	a_left = REG32(reg_addr) & 0xF;
+	b_left = REG32(reg_addr) >> 4;
+
+	if (strcmp(boot_order, "A B") == 0)
+		REG32(reg_addr) = a_left + 1 | b_left << 4;
+	else
+		REG32(reg_addr) = a_left | (b_left + 1) << 4;
+}
 
 int board_init(void)
 {

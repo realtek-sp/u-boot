@@ -464,6 +464,70 @@ static int initr_env(void)
 }
 
 #ifdef CONFIG_OF_CONTROL
+#ifdef CONFIG_DUAL_KERNEL_LOAD_CHECK
+static void proc_dual_kernel_load_check(void)
+{
+	int a_left = 0;
+	int b_left = 0;
+	char *boot_order;
+	const char *reg_addr_s;
+	u32 reg_addr;
+
+	reg_addr_s = env_get("dual_image_reg_addr");
+	reg_addr = simple_strtoul(reg_addr_s, NULL, 16);
+	a_left = REG32(reg_addr) & 0xF;
+	b_left = REG32(reg_addr) >> 4;
+
+	boot_order = env_get("BOOT_ORDER");
+
+	if (a_left == 0 && b_left == 0) {
+		REG32(reg_addr) = BOOT_LEFT_MAX | BOOT_LEFT_MAX << 4;
+		a_left = BOOT_LEFT_MAX;
+		b_left = BOOT_LEFT_MAX;
+	}
+
+	if (strcmp(boot_order, "A") == 0)
+		env_set("BOOT_ORDER", "A B");
+	else if (strcmp(boot_order, "B") == 0)
+		env_set("BOOT_ORDER", "B A");
+
+switch_partition:
+	if (strcmp(boot_order, "A B") == 0) {
+		if (a_left <= BOOT_LEFT_MAX && a_left > 1) {
+			REG32(reg_addr) = a_left - 1 | b_left << 4;
+		} else if (a_left <= 1) {
+			if (b_left <= 1) {
+				REG32(reg_addr) = BOOT_LEFT_MAX - 1 |
+				      BOOT_LEFT_MAX << 4;
+			} else {
+				env_set("BOOT_ORDER", "B A");
+				printf("to B A  %s\n", boot_order);
+				goto switch_partition;
+			}
+		} else {
+			printf("invalid boot left a:%d\n", a_left);
+			REG32(reg_addr) = BOOT_LEFT_MAX - 1 | b_left << 4;
+		}
+	} else  if (strcmp(boot_order, "B A") == 0) {
+		if (b_left <= BOOT_LEFT_MAX && b_left > 1) {
+			REG32(reg_addr) = a_left | (b_left - 1) << 4;
+		} else if (b_left <= 1) {
+			if (a_left <= 1) {
+				REG32(reg_addr) = BOOT_LEFT_MAX |
+				      (BOOT_LEFT_MAX - 1) << 4;
+			} else {
+				env_set("BOOT_ORDER", "A B");
+				printf("to A B  %s\n", boot_order);
+				goto switch_partition;
+			}
+		} else {
+			printf("invalid boot left b:%d\n", b_left);
+			REG32(reg_addr) = a_left | (BOOT_LEFT_MAX - 1) << 4;
+		}
+	}
+}
+#endif
+
 static int initr_get_kernel_offset(void)
 {
 	struct fdt_header *working_fdt;
@@ -501,17 +565,12 @@ static int initr_get_kernel_offset(void)
 	env_set_hex("kerneladdr_a", offset);
 	char *boot_order;
 	char *boot_left;
+	proc_dual_kernel_load_check();
 	boot_order = env_get("BOOT_ORDER");
+	printf("boot_order:%s\n", boot_order);
 	if (boot_order) {
-		if (strcmp(boot_order, "A B") == 0) {
-			boot_left = env_get("BOOT_A_LEFT");
-			if (boot_left && strcmp(boot_left, "0") == 0)
-				goto read_b;
-		} else {
-			boot_left = env_get("BOOT_B_LEFT");
-			if (boot_left && strcmp(boot_left, "0") != 0)
-				goto read_b;
-		}
+		if (strcmp(boot_order, "B A") == 0)
+			goto read_b;
 	}
 	return 0;
 read_b:
