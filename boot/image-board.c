@@ -237,7 +237,7 @@ ulong genimg_get_image(ulong img_addr)
 #endif
 	}
 
-#if IMAGE_ENABLE_FIT
+#if CONFIG_IS_ENABLED(FIT)
 #ifdef CONFIG_RTS_NOR_BOOT
 	ulong h_size, d_size;
 
@@ -253,7 +253,7 @@ ulong genimg_get_image(ulong img_addr)
 			h_size = sizeof(struct fdt_header);
 
 		/* read in header */
-		debug("Reading image header from dataflash address");
+		debug("Reading image header from dataflash address ");
 		debug("%08lx to RAM address %08lx\n", img_addr, ram_addr);
 
 		buf = map_sysmem(ram_addr, 0);
