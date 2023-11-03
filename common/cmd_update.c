@@ -81,6 +81,29 @@ int fdt_node_offset_by_label(const void *fdt, int startoffset,
 	return offset; /* error from fdt_next_node() */
 }
 
+int fdt_get_mtd_index_by_label(const void *fdt, int startoffset,
+				  const char *label, int *mtd_id)
+{
+	int offset, err;
+	int count = 0;
+
+	for (offset = fdt_next_node(fdt, startoffset, NULL);
+		offset >= 0;
+		offset = fdt_next_node(fdt, offset, NULL)) {
+		err = fdt_node_check_label(fdt, offset, label);
+		if ((err < 0) && (err != -FDT_ERR_NOTFOUND))
+			return err;
+		else if (err == 0) {
+			*mtd_id = count;
+			return 0;
+		}
+		if (err > 0)
+			count++;
+	}
+
+	return -1;
+}
+
 int _do_get_partitions(const char *label, int *offset, int *size)
 {
 	struct fdt_header *working_fdt;

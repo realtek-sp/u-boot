@@ -197,9 +197,15 @@ __weak void board_prep_linux(struct bootm_headers *images) { }
 /* Subcommand: PREP */
 static void boot_prep_linux(struct bootm_headers *images)
 {
+#ifdef CONFIG_DUAL_KERNEL_LOAD_CHECK
+	char *commandline = env_get("bootargs_db");
+
+	if (CONFIG_IS_ENABLED(OF_LIBFDT) && CONFIG_IS_ENABLED(LMB) && images->ft_len) {
+#else
 	char *commandline = env_get("bootargs");
 
 	if (CONFIG_IS_ENABLED(OF_LIBFDT) && CONFIG_IS_ENABLED(LMB)) {
+#endif
 		debug("using: FDT\n");
 		if (image_setup_linux(images)) {
 			panic("FDT creation failed!");

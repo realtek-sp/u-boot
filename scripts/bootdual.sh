@@ -1,10 +1,6 @@
 test -n ${BOOT_ORDER} || setenv BOOT_ORDER A B;
-
-bootargs_A=\'rauc.slot=A\';
-echo bootargs_A=${bootargs_A};
-
-bootargs_B=\'rauc.slot=B\';
-echo bootargs_B=${bootargs_B};
+test -n ${BOOT_A_LEFT} || setenv BOOT_A_LEFT 3;
+test -n ${BOOT_B_LEFT} || setenv BOOT_B_LEFT 3;
 
 last_slot_part='';
 slot_part='';
@@ -24,14 +20,14 @@ for BOOT_SLOT in ${BOOT_ORDER}; do
     slot_part=\'A\';
     if test x${last_slot_part} != xA; then
       setenv loadaddr_kernel ${kerneladdr_a};
-      setenv bootargs_db ${bootargs_A};
+      setenv bootargs_db ${bootargs_a};
       saveenv;
     fi;
   elif test x${BOOT_SLOT} = xB; then
     slot_part=\'B\';
     if test x${last_slot_part} != xB; then
       setenv loadaddr_kernel ${kerneladdr_b};
-      setenv bootargs_db ${bootargs_B};
+      setenv bootargs_db ${bootargs_b};
       saveenv;
     fi;
   fi;

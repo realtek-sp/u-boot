@@ -525,7 +525,107 @@ switch_partition:
 			REG32(reg_addr) = a_left | (BOOT_LEFT_MAX - 1) << 4;
 		}
 	}
+
 }
+
+static int check_bootargs_a(struct fdt_header *working_fdt)
+{
+	char cmd[256] = {0};
+	char *bootargs_A = NULL;
+	int size = 0;
+	const char *path_chosen;
+
+	path_chosen = fdtdec_get_chosen_prop(working_fdt, "bootargs");
+
+	snprintf(cmd, sizeof(cmd), "%s %s", path_chosen, "rauc.slot=A");
+	size = strlen(cmd);
+
+	bootargs_A = env_get("bootargs_a");
+	if (bootargs_A) {
+		if (strcmp(bootargs_A, cmd))
+			env_set("bootargs_a", cmd);
+	} else
+		env_set("bootargs_a", cmd);
+
+	return 0;
+}
+
+static void str_replace(char *str_src, int n, char * str_copy)
+{
+	int len = 0;
+	int i = 0;
+	char *tmp = NULL;
+
+	len = strlen(str_copy);
+
+	if (len < n)
+	{
+		tmp = str_src+n;
+		while (*tmp) {
+			*(tmp-(n-len)) = *tmp;
+			tmp++;
+		}
+		*(tmp-(n-len)) = *tmp;
+	} else if (len > n) {
+		tmp = str_src;
+		while (*tmp) tmp++;
+		while (tmp >= (str_src + n)) {
+			*(tmp+(len-n)) = *tmp;
+			tmp--;
+		}
+	}
+	strncpy(str_src, str_copy, len);
+}
+
+static int check_bootargs_b(struct fdt_header *working_fdt, int nodeoffset)
+{
+	const char *path_chosen;
+	int rootfs_b_mtd = -1;
+	int rootfs_a_mtd = -1;
+	char mtd_a[16] = {0};
+	char mtd_b[16] = {0};
+	char cmd[256] = {0};
+	char *bootargs_B = NULL;
+	char *tmp = NULL;
+	int ret = -1;
+	int size = 0;
+
+	path_chosen = fdtdec_get_chosen_prop(working_fdt, "bootargs");
+
+	ret = fdt_get_mtd_index_by_label(working_fdt, nodeoffset,
+					"rootfs", &rootfs_a_mtd);
+	if (ret) {
+		printf("libfdt can't find rootfs label\n");
+		return -1;
+	}
+
+	ret = fdt_get_mtd_index_by_label(working_fdt, nodeoffset,
+					"rootfs_b", &rootfs_b_mtd);
+	if (ret) {
+		printf("libfdt can't find rootfs_b label\n");
+		return -1;
+	}
+
+	snprintf(cmd, sizeof(cmd), "%s %s", path_chosen, "rauc.slot=B");
+	snprintf(mtd_a, sizeof(mtd_a), "%s%d", "ubi.mtd=", rootfs_a_mtd);
+	snprintf(mtd_b, sizeof(mtd_b), "%s%d", "ubi.mtd=", rootfs_b_mtd);
+
+	tmp = strstr(cmd, mtd_a);
+	if (tmp) {
+		str_replace(tmp, strlen(mtd_a), mtd_b);
+		bootargs_B = env_get("bootargs_b");
+		if (bootargs_B) {
+			if (strcmp(bootargs_B, cmd))
+				env_set("bootargs_b", cmd);
+		} else
+			env_set("bootargs_b", cmd);
+
+	} else
+		return -1;
+
+	return 0;
+}
+
 #endif
 
 static int initr_get_kernel_offset(void)
@@ -565,6 +665,8 @@ static int initr_get_kernel_offset(void)
 	env_set_hex("kerneladdr_a", offset);
 	char *boot_order;
 	char *boot_left;
+	int ret = -1;
+
 	proc_dual_kernel_load_check();
 	boot_order = env_get("BOOT_ORDER");
 	printf("boot_order:%s\n", boot_order);
@@ -572,6 +674,11 @@ static int initr_get_kernel_offset(void)
 		if (strcmp(boot_order, "B A") == 0)
 			goto read_b;
 	}
+
+	ret = check_bootargs_a(working_fdt);
+	if (ret)
+		return -1;
+
 	return 0;
 read_b:
 	nodeoffset_s = fdt_node_offset_by_label(working_fdt,
@@ -586,6 +693,10 @@ read_b:
 	}
 
 	env_set_hex("kerneladdr_b", offset);
+
+	ret = check_bootargs_b(working_fdt, nodeoffset);
+	if (ret)
+		return -1;
 #else
 	env_set_hex("kernel_offset", offset);
 #endif

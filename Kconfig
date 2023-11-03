@@ -205,6 +205,9 @@ config DUAL_KERNEL_LOAD_CHECK
 	select CMD_SETEXPR
 	select HUSH_PARSER
 	select SYS_REDUNDAND_ENVIRONMENT
+	select CMDLINE_TAG
+	select SUPPORT_PASSING_ATAGS
+	select SYS_MALLOC_BOOTPARAMS
 	default n
 	help
 	  Create rauc env and check which kernel to load
