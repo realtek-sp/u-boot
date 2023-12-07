@@ -674,6 +674,7 @@ static int set_4byte(struct spi_nor *nor, const struct flash_info *info,
 	case SNOR_MFR_WINBOND:
 	case SNOR_MFR_EON:
 	case SNOR_MFR_GIGADEVICE:
+	case SNOR_MFI_PUYA:
 		if (need_wren)
 			write_enable(nor);
 

@@ -304,6 +304,13 @@ const struct flash_info spi_nor_ids[] = {
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4466, 0x8499, 0x0000}
 	},
+	{
+		INFO("PY25Q256HB", 0x852019, 0, 64 * 1024, 512,
+			SPI_NOR_QUAD_READ | SPI_NOR_WR_QUAD_I |
+			SPI_NOR_4B_OPCODES, SR_3REG, 8),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
 #endif
 #ifdef CONFIG_SPI_FLASH_NM
 	{
@@ -564,6 +571,13 @@ const struct flash_info spi_nor_ids[] = {
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4466, 0x8499, 0x0000}
 	},
+	{
+		INFO("PY25Q256HB", 0x852019, 0, 64 * 1024, 512,
+			SPI_NOR_DUAL_READ | SPI_NOR_4B_OPCODES,
+			SR_3REG, 8),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
 #endif
 #ifdef CONFIG_SPI_FLASH_NM
 	{
@@ -803,6 +817,12 @@ const struct flash_info spi_nor_ids[] = {
 			0, SR_3REG, 0), SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4466, 0x8499, 0x0000}
 	},
+	{
+		INFO("PY25Q256HB", 0x852019, 0, 64 * 1024, 512,
+			SPI_NOR_4B_OPCODES, SR_3REG, 0),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
+	},
 #endif
 #ifdef CONFIG_SPI_FLASH_NM
 	{
@@ -995,6 +1015,13 @@ const struct flash_info spi_nor_ids[] = {
 			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4666, 0x8699, 0x0000}
 	},
+	{
+		INFO("PY25Q256HB", 0x852019, 0, 64 * 1024, 512,
+			SPI_NOR_4IO_READ | QPI_II |
+			SPI_NOR_4B_OPCODES, SR_3REG, 8),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4666, 0x8699, 0x0000}
+	},
 #endif
 #ifdef CONFIG_SPI_FLASH_NM
 	{
@@ -1081,6 +1108,13 @@ const struct flash_info spi_nor_ids[] = {
 			SPI_NOR_4IO_READ | SPI_NOR_DTR | SPI_NOR_WR_QUAD_I,
 			SR_3REG, 8), SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
 			{0x4666, 0x8699, 0x0000}
+	},
+	{
+		INFO("PY25Q256HB", 0x852019, 0, 64 * 1024, 512,
+			SPI_NOR_4IO_READ | SPI_NOR_DTR | SPI_NOR_WR_QUAD_I
+			SPI_NOR_4B_OPCODES, SR_3REG, 8),
+			SPI_NOR_4BIT_BP | SPI_NOR_BP3_SR_BIT6,
+			{0x4466, 0x8499, 0x0000}
 	},
 #endif
 #endif
