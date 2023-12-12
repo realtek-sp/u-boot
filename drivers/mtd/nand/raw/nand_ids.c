@@ -367,7 +367,15 @@ struct nand_flash_dev nand_flash_ids[] = {
 		  2 },
 #endif
 #endif
-	{NULL}
+	{NULL},
+
+	{"Unknown",
+	{ .id = {0xff, 0xff, 0xff} },
+	  SZ_2K, SZ_128, SZ_128K, 0, PLANE_WITH_1 | OTP_TYPE_1,
+	  0x3B, ADDR_SINGLE_CH | DATA_DUAL_CH, 0x8, 0x02,
+	  ADDR_SINGLE_CH | DATA_SINGLE_CH,
+	  0, 8, 64, NAND_ECC_INFO(1, SZ_512),
+	  2 }
 };
 
 /* Manufacturer IDs */

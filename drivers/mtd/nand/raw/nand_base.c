@@ -4327,6 +4327,7 @@ int nand_detect(struct nand_chip *chip, int *maf_id,
 		int *dev_id, struct nand_flash_dev *type)
 {
 	struct mtd_info *mtd = &chip->mtd;
+	struct rts_spinand_info *info = (struct rts_spinand_info *)chip->priv;
 	const struct nand_manufacturer *manufacturer_desc;
 	int busw, ret;
 	u8 *id_data = chip->id.data;
@@ -4400,6 +4401,35 @@ int nand_detect(struct nand_chip *chip, int *maf_id,
 		} else if (*dev_id == type->dev_id) {
 			break;
 		}
+	}
+
+	if ((!type->name) && (*maf_id != 0xff) && (*dev_id != 0xff)) {
+		type++;
+		/* point to unknown flash */
+		mtd->writesize = type->pagesize;
+		mtd->erasesize = type->erasesize;
+		mtd->oobsize = type->oobsize;
+
+		chip->bits_per_cell = nand_get_bits_per_cell(chip->id.data[2]);
+		chip->chipsize = (uint64_t)type->chipsize << 20;
+		chip->options |= type->options;
+		chip->ecc_strength_ds = NAND_ECC_STRENGTH(type);
+		chip->ecc_step_ds = NAND_ECC_STEP(type);
+		chip->onfi_timing_mode_default =
+					type->onfi_timing_mode_default;
+
+		info->spi_dev.flags = type->flag;
+		info->spi_dev.read_cmd = type->read_cmd;
+		info->spi_dev.read_dummy = type->read_dummy;
+		info->spi_dev.read_type = type->read_type;
+		info->spi_dev.write_cmd = type->write_cmd;
+		info->spi_dev.write_dummy = type->write_dummy;
+		info->spi_dev.write_type = type->write_type;
+
+		if (!mtd->name)
+			mtd->name = type->name;
+
+		goto ident_done;
 	}
 
 	chip->onfi_version = 0;
