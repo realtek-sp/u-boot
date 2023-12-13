@@ -547,7 +547,7 @@ int image_decomp(int comp, ulong load, ulong image_start, int type,
 
 	*load_end = load + image_len;
 #ifndef USE_HOSTCC
-	flush_cache(load, ALIGN(image_len, 128));
+	invalidate_dcache_range(load, ALIGN(image_len, 128));
 #endif
 	puts("OK\n");
 	return 0;

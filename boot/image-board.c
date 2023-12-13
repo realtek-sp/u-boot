@@ -259,6 +259,7 @@ ulong genimg_get_image(ulong img_addr)
 		buf = map_sysmem(ram_addr, 0);
 		img_addr += 0x04000000;
 		dma_copy(img_addr, buf, h_size);
+		invalidate_dcache_range(buf, h_size);
 
 		/* get data size */
 		switch (genimg_get_format(buf)) {
@@ -279,6 +280,7 @@ ulong genimg_get_image(ulong img_addr)
 			ram_addr + h_size);
 
 		dma_copy(img_addr + h_size, (char *)(buf + h_size), d_size);
+		invalidate_dcache_range((buf + h_size), d_size);
 	}
 #endif /* CONFIG_HAS_DATAFLASH */
 #endif
