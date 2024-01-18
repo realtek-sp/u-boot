@@ -42,6 +42,7 @@ int do_bootelf(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 	unsigned long rc; /* Return value from user code */
 	char *sload = NULL;
 	int rcode = 0;
+	unsigned long entry;
 
 	/* Consume 'bootelf' */
 	argc--; argv++;
@@ -54,11 +55,13 @@ int do_bootelf(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 		argc--; argv++;
 	}
 	/* Check for address. */
-	if (argc >= 1 && strict_strtoul(argv[0], 16, &addr) != -EINVAL) {
+	if (argc >= 1 && strict_strtoul(argv[0], 16, &entry) != -EINVAL) {
 		/* Consume address */
 		argc--; argv++;
 	} else
 		addr = image_load_addr;
+
+	addr = image_load_addr + sizeof(struct legacy_img_hdr);
 
 	if (!valid_elf_image(addr))
 		return 1;
@@ -68,17 +71,17 @@ int do_bootelf(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
 	else
 		addr = load_elf_image_shdr(addr);
 
-	if (!env_get_autostart())
-		return rcode;
+	/* if (!env_get_autostart()) */
+	/* 	return rcode; */
 
-	printf("## Starting application at 0x%08lx ...\n", addr);
+	printf("## Starting application at 0x%08lx ...\n", entry);
 	flush();
 
 	/*
 	 * pass address parameter as argv[0] (aka command name),
 	 * and all remaining args
 	 */
-	rc = do_bootelf_exec((void *)addr, argc, argv);
+	rc = do_bootelf_exec((void *)entry, argc, argv);
 	if (rc != 0)
 		rcode = 1;
 
