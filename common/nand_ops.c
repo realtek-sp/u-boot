@@ -46,10 +46,11 @@ int copy_imagedata_to_ram(ulong offset, ulong ram_addr, ulong data_length)
 	nand = get_nand_dev_by_index(0);
 	if (!nand)
 		return 1;
-	read_len = data_length + 64;
-#if IMAGE_ENABLE_FIT
-	read_len = data_length + 0x2000;
-#endif
+	if (IS_ENABLED(CONFIG_FIT))
+		read_len = data_length + 0x2000;
+	else
+		read_len = data_length + 64;
+
 	printf("image: nand read data from offset ");
 	printf("%#lx to  %#lx, length is  %#x, limit is %#llx\n",
 	       offset, ram_addr, read_len, nand->size);
