@@ -198,6 +198,19 @@ static int print_cpuinfo(void)
 }
 #endif
 
+static int sync_data(void)
+{
+	int board_reset_mode = REG32(0x18860028);
+	int reg;
+
+	if ((board_reset_mode & 0xF) == 0x3) {
+		reg = REG32(0x19010000);
+		if (reg > 0x62000)
+			memcpy(0x82800000 + 0x5e000, 0x81000000 + 0x5e000, 0x1E000);
+	}
+	return 0;
+}
+
 static int announce_dram_init(void)
 {
 	puts("DRAM:  ");
@@ -895,6 +908,7 @@ static const init_fnc_t init_sequence_f[] = {
 #if defined(CONFIG_VID) && !defined(CONFIG_SPL)
 	init_func_vid,
 #endif
+	sync_data,
 	announce_dram_init,
 	dram_init,		/* configure available RAM banks */
 #ifdef CONFIG_POST
