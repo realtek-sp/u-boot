@@ -176,6 +176,8 @@
 #define SYS_PLL_ENABLE_STEP2	0x03
 #define SYS_PLL_CK_RDY		0x01
 
+#define CMU_SSC_RSTB		0x01
+#define CMU_SSC_EN		0x01
 
 #ifdef CONFIG_TARGET_FPGA
 #define CPU_FREQUCNCY		50000000 /* Hz*/
