@@ -843,6 +843,7 @@ static int misc_init_f(void)
 }
 
 static const init_fnc_t init_sequence_f[] = {
+	sync_data,
 	setup_mon_len,
 #ifdef CONFIG_OF_CONTROL
 	fdtdec_setup,
@@ -908,7 +909,6 @@ static const init_fnc_t init_sequence_f[] = {
 #if defined(CONFIG_VID) && !defined(CONFIG_SPL)
 	init_func_vid,
 #endif
-	sync_data,
 	announce_dram_init,
 	dram_init,		/* configure available RAM banks */
 #ifdef CONFIG_POST
