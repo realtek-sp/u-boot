@@ -1015,4 +1015,5 @@ static inline enum dma_data_direction mmc_get_dma_dir(struct mmc_data *data)
 	return data->flags & MMC_DATA_WRITE ? DMA_TO_DEVICE : DMA_FROM_DEVICE;
 }
 
+int load_bin_from_sd(void);
 #endif /* _MMC_H_ */

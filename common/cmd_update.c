@@ -559,6 +559,43 @@ int do_write_for_rescure(void)
 	return ret;
 }
 
+int load_bin_from_sd(void)
+{
+        unsigned long bytes;
+        unsigned long pos;
+        int len_read;
+        unsigned long time;
+        int ret;
+        int *temp = &len_read;
+        const char *filename  = "linux.bin";
+        unsigned long loadaddr = CONFIG_SYS_LOAD_ADDR;
+
+        if (fs_set_blk_dev("mmc", "0", FS_TYPE_FAT))
+                if (fs_set_blk_dev("mmc", "1", FS_TYPE_FAT))
+                        return 0;
+
+        bytes = 0;
+        pos = 0;
+        time = get_timer(0);
+        ret = fs_read(filename, loadaddr, pos, bytes, (loff_t *)temp);
+        printf("in load_bin_from_sd\n");
+        time = get_timer(time);
+        if (ret < 0)
+                return 0;
+
+	printf("%d bytes read in %lu ms", len_read, time);
+        if (time > 0) {
+                puts(" (");
+                print_size(len_read / time * 1000, "/s");
+                puts(")");
+        }
+        puts("\n");
+
+        _do_write_all_(len_read);
+
+        return 0;
+}
+
 #ifdef CONFIG_CRYPTO_BOOT
 int load_key_from_sd(void)
 {

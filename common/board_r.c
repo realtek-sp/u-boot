@@ -968,6 +968,9 @@ static init_fnc_t init_sequence_r[] = {
 #ifdef CONFIG_OF_CONTROL
 	initr_get_kernel_offset,
 #endif
+#ifdef CONFIG_UPDATE_KERNEL_FROM_SD
+	load_bin_from_sd,
+#endif
 #ifdef CONFIG_SYS_MALLOC_BOOTPARAMS
 	initr_malloc_bootparams,
 #endif
