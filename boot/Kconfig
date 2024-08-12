@@ -1137,6 +1137,7 @@ config SATA_BOOT
 
 config RTS_EMMC_BOOT
 	bool "Support for booting from SD/EMMC"
+	select MMC
 	select MMC_RTS
 	select FS_FAT
 	default n
