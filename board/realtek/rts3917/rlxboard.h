@@ -98,7 +98,9 @@
 
 #define CONFIG_SYS_INIT_SP_ADDR		0x80100000
 #define CONFIG_SYS_INIT_SP_ADDR_SRAM	0x19010000
+#ifndef CONFIG_SYS_LOAD_ADDR
 #define CONFIG_SYS_LOAD_ADDR		0x80400000     /* default load address */
+#endif
 
 #define CONFIG_SYS_MEMTEST_START	0x80100000
 #define CONFIG_SYS_MEMTEST_END		0x80130000
@@ -128,15 +130,6 @@
 /* We boot from this flash, selected with dip switch */
 /* ATF_BOOT NOR_BASE 0x04000000 NAND_BASE 0x02000000 */
 /* UBOOT_AS_BL33 OFFSET 0x128, UBOOT_AS_BL2 OFFSET 0X88 */
-#ifdef CONFIG_FIT
-#ifdef CONFIG_RTS_NAND_BOOT
-#define NAND_BOOT_FIP
-#else
-#ifdef CONFIG_RTS_NOR_BOOT
-#define NOR_BOOT_FIP
-#endif
-#endif
-#endif
 
 #ifdef NAND_BOOT_FIP
 #ifdef UBOOT_AS_BL33

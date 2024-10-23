@@ -11,7 +11,33 @@
 #include <nand.h>
 #include <image.h>
 
-int get_data_length_from_nand(ulong offset, ulong *data_length)
+int get_fit_data_length_from_nand(ulong offset, ulong *data_length)
+{
+	const struct fdt_header *hdr;
+	struct mtd_info *nand;
+	size_t read_len;
+	ulong addr;
+	int ret;
+
+	read_len = sizeof(struct fdt_header);
+	addr = CONFIG_SYS_LOAD_ADDR;
+	nand = get_nand_dev_by_index(0);
+	if (!nand)
+		return 1;
+	printf("nand read header offset is %#lx, read_len is %#x\n", offset,
+	       read_len);
+	ret = nand_read_skip_bad(nand, offset, &read_len, NULL, nand->size,
+				 (u_char *)addr);
+
+	hdr = (struct fdt_header *)addr;
+	*data_length = htonl(hdr->totalsize);
+
+	printf("data length is %#lx\n", *data_length);
+
+	return ret;
+}
+
+int get_legacy_data_length_from_nand(ulong offset, ulong *data_length)
 {
 	const struct legacy_img_hdr *hdr;
 	struct mtd_info *nand;
@@ -24,14 +50,14 @@ int get_data_length_from_nand(ulong offset, ulong *data_length)
 	nand = get_nand_dev_by_index(0);
 	if (!nand)
 		return 1;
-	printf("nand read header offset is %#lx, read_len is %#x\n",
-	       offset, read_len);
-	ret = nand_read_skip_bad(nand, offset, &read_len,
-				 NULL, nand->size, (u_char *)addr);
+	printf("nand read header offset is %#lx, read_len is %#x\n", offset,
+	       read_len);
+	ret = nand_read_skip_bad(nand, offset, &read_len, NULL, nand->size,
+				 (u_char *)addr);
 
 	hdr = (struct legacy_img_hdr *)addr;
-
 	*data_length = htonl(hdr->ih_size);
+
 	printf("data length is %#lx\n", *data_length);
 
 	return ret;
@@ -52,11 +78,11 @@ int copy_imagedata_to_ram(ulong offset, ulong ram_addr, ulong data_length)
 		read_len = data_length + 64;
 
 	printf("image: nand read data from offset ");
-	printf("%#lx to  %#lx, length is  %#x, limit is %#llx\n",
-	       offset, ram_addr, read_len, nand->size);
+	printf("%#lx to  %#lx, length is  %#x, limit is %#llx\n", offset,
+	       ram_addr, read_len, nand->size);
 
-	ret = nand_read_skip_bad(nand, offset, &read_len,
-				 NULL, nand->size, (u_char *)ram_addr);
+	ret = nand_read_skip_bad(nand, offset, &read_len, NULL, nand->size,
+				 (u_char *)ram_addr);
 
 	return ret;
 }
@@ -73,11 +99,11 @@ int copy_fdt_to_ram(ulong offset, ulong ram_addr, ulong data_length)
 	read_len = data_length;
 
 	printf("fdt: nand read data from offset ");
-	printf("%#lx to  0x%lx, length is  %#x, limit is %#llx\n",
-	       offset, ram_addr, read_len, nand->size);
+	printf("%#lx to  0x%lx, length is  %#x, limit is %#llx\n", offset,
+	       ram_addr, read_len, nand->size);
 
-	ret = nand_read_skip_bad(nand, offset, &read_len,
-				 NULL, nand->size, (u_char *)ram_addr);
+	ret = nand_read_skip_bad(nand, offset, &read_len, NULL, nand->size,
+				 (u_char *)ram_addr);
 
 	return ret;
 }
@@ -110,8 +136,8 @@ int update_image_to_nand(ulong offset, size_t length, unsigned char *buf)
 	 *	opts.offset, opts.length);
 	 */
 	ret = nand_erase_opts(nand, &opts);
-	ret = nand_write_skip_bad(nand, offset,  &length,
-				  NULL, nand->size, buf, 0);
+	ret = nand_write_skip_bad(nand, offset, &length, NULL, nand->size, buf,
+				  0);
 
 	return ret;
 }
@@ -139,8 +165,8 @@ int update_image_for_nand(ulong offset, size_t length, unsigned char *buf,
 	 *	opts.offset, opts.length);
 	 */
 	ret = nand_erase_opts(nand, &opts);
-	ret = nand_write_skip_bad(nand, offset,  &length,
-				  NULL, nand->size, buf, 0);
+	ret = nand_write_skip_bad(nand, offset, &length, NULL, nand->size, buf,
+				  0);
 
 	return ret;
 }

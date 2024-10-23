@@ -49,13 +49,25 @@ int load_iv_from_sd(void);
 int update_image_for_nand(ulong offset, size_t length,
 			  unsigned char *buf, size_t erase_length);
 int update_image_to_nand(ulong offset, size_t length, unsigned char *buf);
-int get_data_length_from_nand(ulong offset, ulong *data_length);
+int get_fit_data_length_from_nand(ulong offset, ulong *data_length);
+int get_legacy_data_length_from_nand(ulong offset, ulong *data_length);
+#if CONFIG_IS_ENABLED(FIT)
+#define get_data_length_from_nand get_fit_data_length_from_nand
+#else
+#define get_data_length_from_nand get_legacy_data_length_from_nand
+#endif
 int copy_imagedata_to_ram(ulong offset, ulong ram_addr, ulong data_length);
 
 int do_write_for_rescure(void);
 
 /*mmc_ops.c*/
-int get_data_length_from_mmc(ulong offset, ulong *data_length);
+int get_fit_data_length_from_mmc(ulong offset, ulong *data_length);
+int get_legacy_data_length_from_mmc(ulong offset, ulong *data_length);
+#if CONFIG_IS_ENABLED(FIT)
+#define get_data_length_from_mmc get_fit_data_length_from_mmc
+#else
+#define get_data_length_from_mmc get_legacy_data_length_from_mmc
+#endif
 int copy_mmcdata_to_ram(ulong offset, ulong ram_addr, ulong data_length);
 
 int fdt_node_offset_by_label(const void *fdt, int startoffset,

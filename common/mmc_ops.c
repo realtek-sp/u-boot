@@ -9,7 +9,31 @@
 #include <mapmem.h>
 #include <mmc.h>
 
-int get_data_length_from_mmc(ulong offset, ulong *data_length)
+int get_fit_data_length_from_mmc(ulong offset, ulong *data_length)
+{
+	const struct fdt_header *hdr;
+	struct mmc *mmc;
+	ulong addr;
+	int ret = 0;
+
+	addr = CONFIG_SYS_LOAD_ADDR;
+	mmc = find_mmc_device(0);
+	blk_select_hwpart_devnum(UCLASS_MMC, 0, 0);
+	mmc_set_part_conf(mmc, 0, 0, 0);
+	printf("mmc read header offset is %lu\n", offset);
+	blk_dread(mmc_get_blk_desc(mmc), (offset >> 9), 1, (void *)addr);
+
+	hdr = (struct fdt_header *)addr;
+
+	*data_length = htonl(hdr->totalsize);
+	printf("data length is %lx\n", *data_length);
+
+	blk_select_hwpart_devnum(UCLASS_MMC, 0, 1);
+	mmc_set_part_conf(mmc, 0, 1, 1);
+	return ret;
+}
+
+int get_legacy_data_length_from_mmc(ulong offset, ulong *data_length)
 {
 	const struct legacy_img_hdr *hdr;
 	struct mmc *mmc;
@@ -48,8 +72,8 @@ int copy_mmcdata_to_ram(ulong offset, ulong ram_addr, ulong data_length)
 	printf("emmc read data from offset 0x%lx to  0x%lx, length is  0x%x\n",
 	       offset, ram_addr, read_len);
 
-	blk_dread(mmc_get_blk_desc(mmc), (offset >> 9),
-		  (read_len >> 9) + 2, (void *)ram_addr);
+	blk_dread(mmc_get_blk_desc(mmc), (offset >> 9), (read_len >> 9) + 2,
+		  (void *)ram_addr);
 
 	if (n == ((read_len >> 9) + 2))
 		ret = 0;
@@ -60,4 +84,3 @@ int copy_mmcdata_to_ram(ulong offset, ulong ram_addr, ulong data_length)
 	mmc_set_part_conf(mmc, 0, 1, 1);
 	return ret;
 }
-
