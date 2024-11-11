@@ -1,0 +1,1 @@
+obj-$(CONFIG_BOARD_RTS3917) += clk-rts3917.o
