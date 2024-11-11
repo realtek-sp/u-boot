@@ -27,43 +27,17 @@
 #include <linux/bug.h>
 #include <linux/delay.h>
 #include <cpu_func.h>
+#include <dm/pinctrl.h>
+#include <reset.h>
+#include <dt-bindings/clock/rts3917-clock.h>
 
-#define clear_bit(addr, val)	writel((readl(addr) & ~(val)), addr)
-#define set_bit(addr, val)	writel((readl(addr) | (val)), addr)
-
-#define FORCE_BUS_SD_RESET		0x80
-#define FORCE_BUS_SD1_RESET		0x200
-#define FORCE_SD_CLK_ASYNC_RESET	0x020
-#define FORCE_SD1_CLK_ASYNC_RESET	0x8000
-
-#define RTS_FRR_SET(addr, mask)				\
-do {							\
-	u32 val;					\
-	val = readl((addr));				\
-	val |= (mask);					\
-	writel(val, (addr));				\
-} while (0)
-
-#define RTS_FRR_CLR(addr, mask)				\
-do {							\
-	u32 val;					\
-	val = readl((addr));				\
-	val &= ~(mask);					\
-	writel(val, (addr));				\
-} while (0)
-
-#define RTS_FORCE_RESET_AUTO(addr, mask)	RTS_FRR_SET(addr, mask)
-
-#define RTS_FORCE_RESET(addr, mask)			\
-do {							\
-	RTS_FRR_SET(addr, mask);			\
-	RTS_FRR_CLR(addr, mask);			\
-} while (0)
+#define clear_bit(addr, val) writel((readl(addr) & ~(val)), addr)
+#define set_bit(addr, val)   writel((readl(addr) | (val)), addr)
 
 #define rtsmmc_control_table(addr, val) (((u32)(addr) << 16) | (u8)(val))
 
-#define RTSMMC_CMD_TIMEOUT_MS		50
-#define RTSMMC_DAT_TIMEOUT_MS		10000
+#define RTSMMC_CMD_TIMEOUT_MS 50
+#define RTSMMC_DAT_TIMEOUT_MS 10000
 
 static const u32 rtsmmc_pull_ctl_enable_tbl[] = {
 	rtsmmc_control_table(SDDAT_L_PULL_CTL, 0xAA),
@@ -436,28 +410,10 @@ static inline int rtsmmc_transfer_cmd(struct rts_mmc_host *rtsmmc, int cmdtype)
 		rtsmmc->cmd_timeout_ms, cmdtype);
 }
 
-static inline void rtsmmc_change_clock(void)
-{
-	u32 clk_rate_set = CLOCK_SELECT_DIV2 | SRC_USB_PLL_5;
-
-	writel(SD0_CHANGE_CLK, CLK_CHANGE_REG);
-	writel(CLK_ENABLE | clk_rate_set, SD0_CRC_CLK_CFG_REG);
-	writel(CLK_ENABLE | clk_rate_set, SD0_SAMPLE_CLK_CFG_REG);
-	writel(CLK_ENABLE | clk_rate_set, SD0_PUSH_CLK_CFG_REG);
-	writel(0, CLK_CHANGE_REG);
-
-	writel(SD1_CHANGE_CLK, CLK_CHANGE_REG);
-	writel(CLK_ENABLE | clk_rate_set, SD1_CRC_CLK_CFG_REG);
-	writel(CLK_ENABLE | clk_rate_set, SD1_SAMPLE_CLK_CFG_REG);
-	writel(CLK_ENABLE | clk_rate_set, SD1_PUSH_CLK_CFG_REG);
-	writel(0, CLK_CHANGE_REG);
-}
-
 static int rtsmmc_set_clock_asic(struct rts_mmc_host *rtsmmc,
 				 unsigned int clock)
 {
 	int err = 0;
-	unsigned int final_clock;
 	u8 cfg_div = SD_CLK_DIVIDE_0;
 
 	if (clock == 0) {
@@ -469,15 +425,17 @@ static int rtsmmc_set_clock_asic(struct rts_mmc_host *rtsmmc,
 	if (clock > rtsmmc->max_clock)
 		clock = rtsmmc->max_clock;
 
-	final_clock = clock;
 	if (rtsmmc->initial_mode) {
-		final_clock *= 128;
 		cfg_div = SD_CLK_DIVIDE_128;
+		clock = 50000000;
 	} else {
-		final_clock *= 2;
+		clock *= 2;
 	}
+
+	clk_set_rate(rtsmmc->sd_crc_ck, clock);
+	clk_set_rate(rtsmmc->sd_sample_ck, clock);
+	clk_set_rate(rtsmmc->sd_push_ck, clock);
 	//set clock 48M
-	rtsmmc_change_clock();
 
 	rtsmmc_init_cmd(rtsmmc);
 	rtsmmc_write(rtsmmc, SD_BUS_STAT, SD_CLK_TOGGLE_STOP, 0);
@@ -487,8 +445,7 @@ static int rtsmmc_set_clock_asic(struct rts_mmc_host *rtsmmc,
 
 	udelay(10);			/* wait clock stable */
 
-	debug("clock %d final clock %d, cfg_div %d\n",
-	      clock, final_clock, cfg_div);
+	debug("clock %d, cfg_div %d\n", clock, cfg_div);
 	return err;
 }
 
@@ -506,8 +463,10 @@ int rtsmmc_set_clock(struct rts_mmc_host *rtsmmc, unsigned int clock)
 	debug("set clock to %u %d\n", clock, rtsmmc->initial_mode);
 
 #ifdef CONFIG_TARGET_FPGA
+	rtsmmc->max_clock = FPGA_MAX_CLK;
 	err |= rtsmmc_set_clock_fpga(rtsmmc, clock);
 #else
+	rtsmmc->max_clock = DATA_MAX_CLK;
 	err |= rtsmmc_set_clock_asic(rtsmmc, clock);
 #endif
 	if (!err)
@@ -1129,8 +1088,9 @@ out:
 	return err;
 }
 
-static int rtsmmc_power_on_asic(struct rts_mmc_host *rtsmmc)
+static int rtsmmc_power_on_asic(struct udevice *dev)
 {
+	struct rts_mmc_host *rtsmmc = dev_get_priv(dev);
 	int err = 0;
 	u8 val, count = 0;
 
@@ -1163,7 +1123,8 @@ static int rtsmmc_power_on_asic(struct rts_mmc_host *rtsmmc)
 	rtsmmc_write(rtsmmc, CARD_CLK_EN, SD_CLK_EN, SD_CLK_EN);
 	rtsmmc_pull_ctl_enable(rtsmmc);
 	// REG32(SD0_PULLCTRL) = SD0_PULLCTRL_SETTING;
-	writel(SD0_PULLCTRL_SETTING, SD0_PULLCTRL);
+	// writel(SD0_PULLCTRL_SETTING, SD0_PULLCTRL);
+	pinctrl_select_state(dev, "pullup");
 
 	err = rtsmmc_transfer_cmd(rtsmmc, CMD_TYPE_CMD_BUFF);
 	if (err < 0)
@@ -1272,19 +1233,23 @@ int rtsmmc_set_timing(struct rts_mmc_host *rtsmmc, int timing)
 	return err;
 }
 
-static int rtsmmc_power_on(struct rts_mmc_host *rtsmmc)
+static int rtsmmc_power_on(struct udevice *dev)
 {
 	int err;
+	struct rts_mmc_host *rtsmmc = dev_get_priv(dev);
 
-	rtsmmc_clk_enable();
+	// rtsmmc_clk_enable();
+	clk_prepare_enable(rtsmmc->sd_crc_ck);
+	clk_prepare_enable(rtsmmc->sd_sample_ck);
+	clk_prepare_enable(rtsmmc->sd_push_ck);
 #ifdef CONFIG_TARGET_FPGA
-		err = rtsmmc_power_on_fpga(rtsmmc);
-		rtsmmc_set_timing(rtsmmc, 0);
-		rtsmmc_switch_voltage_fpga(VOLTAGE_OUTPUT_3V3);
+	err = rtsmmc_power_on_fpga(dev);
+	rtsmmc_set_timing(rtsmmc, 0);
+	rtsmmc_switch_voltage_fpga(VOLTAGE_OUTPUT_3V3);
 #else
-		err = rtsmmc_power_on_asic(rtsmmc);
-		rtsmmc_set_timing(rtsmmc, 0);
-		rtsmmc_switch_voltage_asic(rtsmmc, VOLTAGE_OUTPUT_3V3);
+	err = rtsmmc_power_on_asic(dev);
+	rtsmmc_set_timing(rtsmmc, 0);
+	rtsmmc_switch_voltage_asic(rtsmmc, VOLTAGE_OUTPUT_3V3);
 #endif
 
 	if (err)
@@ -1293,10 +1258,11 @@ static int rtsmmc_power_on(struct rts_mmc_host *rtsmmc)
 	return 0;
 }
 
-static int rts_mmc_init(struct mmc *mmc)
+static int rts_mmc_init(struct udevice *dev)
 {
 	int err = 0;
-	struct rts_mmc_host *rtsmmc = mmc->priv;
+	struct rts_mmc_host *rtsmmc = dev_get_priv(dev);
+	struct rts_mmc_plat *plat = dev_get_plat(dev);
 
 	rtsmmc->sd_pull_ctl_enable_tbl = rtsmmc_pull_ctl_enable_tbl;
 	rtsmmc->sd_pull_ctl_disable_tbl = rtsmmc_pull_ctl_disable_tbl;
@@ -1307,7 +1273,7 @@ static int rts_mmc_init(struct mmc *mmc)
 	rtsmmc->card_status = rtsmmc_readl(rtsmmc, BIPR) & SD_EXIST;
 
 	if (rtsmmc->card_status & SD_EXIST) {
-		err = rtsmmc_power_on(rtsmmc);
+		err = rtsmmc_power_on(dev);
 		if (err < 0) {
 			printf("rtsmmc_power_on err\n");
 			return err;
@@ -1328,7 +1294,7 @@ static int rts_mmc_init(struct mmc *mmc)
 	if (err < 0)
 		return err;
 
-	return mmc_init(mmc);
+	return mmc_init(&plat->mmc);
 }
 
 static int rts_mmc_probe(struct udevice *dev)
@@ -1336,19 +1302,27 @@ static int rts_mmc_probe(struct udevice *dev)
 	struct mmc_uclass_priv *upriv = dev_get_uclass_priv(dev);
 	struct rts_mmc_host *rtsmmc = dev_get_priv(dev);
 	struct rts_mmc_plat *plat = dev_get_plat(dev);
+	struct clk *pclk;
+	struct reset_ctl rst;
+	int ret;
+
+	ret = reset_get_by_index(dev, 0, &rst);
+	if (ret) {
+		printf("rts_mmc: cannot get reset controller: %d\n", ret);
+		return ret;
+	}
 
 	clear_bit(SYS_MEM_SD, SDIO_MEM_SD);
 	mdelay(5);
 
-	RTS_FORCE_RESET_AUTO(SYS_RESET_BASE, FORCE_BUS_SD_RESET);
-	RTS_FORCE_RESET(FORCE_REG_ASYNC_RST, FORCE_SD_CLK_ASYNC_RESET);
+	ret = reset_request(&rst);
+	if (ret) {
+		printf("rts_mmc: cannot request reset controller: %d\n", ret);
+		return ret;
+	}
+
 	udelay(2);
 
-	// clear_bit(SYS_MEM_SD, SDIO2_MEM_SD);
-	// mdelay(5);
-
-	// RTS_FORCE_RESET_AUTO(SYS_RESET_BASE, FORCE_BUS_SD1_RESET);
-	// RTS_FORCE_RESET(FORCE_REG_ASYNC_RST, FORCE_SD1_CLK_ASYNC_RESET);
 	// udelay(2);
 
 	plat->mmc.priv = rtsmmc;
@@ -1365,8 +1339,26 @@ static int rts_mmc_probe(struct udevice *dev)
 
 	rtsmmc->cmd_timeout_ms = RTSMMC_CMD_TIMEOUT_MS;
 	rtsmmc->data_timeout_ms = RTSMMC_DAT_TIMEOUT_MS;
+	rtsmmc->sd_crc_ck = devm_clk_get(dev, "sd_crc_ck");
+	if (IS_ERR(rtsmmc->sd_crc_ck)) {
+		pr_err("get sd_crc_clk failed\n");
+	}
+	clk_get_by_id(RLX_CLK_SYS_PLL0_5, &pclk);
+	clk_set_parent(rtsmmc->sd_crc_ck, pclk);
 
-	return rts_mmc_init(&plat->mmc);
+	rtsmmc->sd_sample_ck = devm_clk_get(dev, "sd_sample_ck");
+	if (IS_ERR(rtsmmc->sd_sample_ck)) {
+		pr_err("get sd_sample_ck failed\n");
+	}
+	clk_set_parent(rtsmmc->sd_sample_ck, pclk);
+
+	rtsmmc->sd_push_ck = devm_clk_get(dev, "sd_push_ck");
+	if (IS_ERR(rtsmmc->sd_push_ck)) {
+		pr_err("get sd_push_ck failed\n");
+	}
+	clk_set_parent(rtsmmc->sd_push_ck, pclk);
+
+	return rts_mmc_init(dev);
 }
 
 static int rts_mmc_bind(struct udevice *dev)

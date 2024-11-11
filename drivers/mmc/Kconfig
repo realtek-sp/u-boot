@@ -883,7 +883,7 @@ config FSL_USDHC
 
 config MMC_RTS
 	bool "Realtek SD/MMC Host Controller support"
-	depends on MMC
+	depends on MMC && PINCTRL_RTS3917
 	default y if MMC
 	select CMD_MMC
 	help

@@ -10,6 +10,7 @@
 
 #include <asm/io.h>
 #include <mmc.h>
+#include <clk.h>
 
 #define RTS_MMC_DUMMY_F_MIN     250000
 #define RTS_MMC_DUMMY_F_MAX     208000000
@@ -107,6 +108,9 @@ struct rts_mmc_host {
 	u8			sd_mode;
 
 	u32			data_errors;
+	struct clk		*sd_crc_ck;
+	struct clk		*sd_sample_ck;
+	struct clk		*sd_push_ck;
 };
 
 static inline void rtsmmc_writel(struct rts_mmc_host *rtsmmc, int reg, u32 val)
