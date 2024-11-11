@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config PINCTRL_RTS3917
+	bool "Pinctrl and GPIO driver for Realtek rts3917 series"
+	depends on DM && PINCTRL_GENERIC
+	help
+	  Support pin muxing and pin configuration on
+	  Realtek rts3917 SoC.
+
+	  The rts3917 contains many GPIO pins. Most of them are
+	  multiplexed with other system functions. These pins can
+	  be configured as either GPIO pin or alternate function.
+	  It also supports basic configurations such as pull up/down,
+	  drive-strength, and slew rate control for some of the pins.
