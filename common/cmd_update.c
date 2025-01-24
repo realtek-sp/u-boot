@@ -297,11 +297,15 @@ static int do_update_rootfs(void)
 	u32 size;
 	u32 len = 0;
 	u32 loadaddr = CONFIG_SYS_LOAD_ADDR;
-	char *label = "rootfs";
+	char *label = "rofs";
+	char *label1 = "rootfs";
 
 	ret = _do_get_partitions(label, &offset, &size);
-	if (ret < 0)
-		return 1;
+	if (ret < 0){
+		ret = _do_get_partitions(label1, &offset, &size);
+		if(ret < 0)
+			return 1;
+	}
 	printf("update rootfs to offset %x, partition size: %x\n",
 		offset, size);
 	len = _do_get_file_("/rootfs.bin");

@@ -257,22 +257,28 @@ ulong genimg_get_image(ulong img_addr)
 		debug("%08lx to RAM address %08lx\n", img_addr, ram_addr);
 
 		buf = map_sysmem(ram_addr, 0);
+		ulong img_addr_init = img_addr;
 		img_addr += 0x04000000;
-		dma_copy(img_addr, buf, h_size);
-		invalidate_dcache_range(buf, h_size);
 
-		/* get data size */
-		switch (genimg_get_format(buf)) {
-		case IMAGE_FORMAT_FIT:
-			d_size = fit_get_size(buf) - h_size;
-			debug("FIT/FDT format image found at 0x%08lx,");
-			debug("size 0x%08lx\n", ram_addr, d_size);
-			break;
-		default:
-			printf("No valid image found at 0x%08lx\n",
-				img_addr);
-			return ram_addr;
+		for(u32 i = 0; i < 2; i++){
+			dma_copy(img_addr, buf, h_size);
+			invalidate_dcache_range(buf, buf + ALIGN(h_size, ARCH_DMA_MINALIGN));
+
+
+			/* get data size */
+			if (genimg_get_format(buf) == IMAGE_FORMAT_FIT) {
+				d_size = fit_get_size(buf) - h_size;
+				printf("FIT/FDT format image found at 0x%08lx,");
+				printf("size 0x%08lx\n", ram_addr, d_size);
+				break;
+			}else{
+				img_addr -= 0x04000000;
+			}
 		}
+		if(img_addr < img_addr_init){
+			printf("No valid image found after all attempts.\n");
+ 			return ram_addr;
+ 		}
 
 		/* read in image data */
 		debug("Reading image remaining data from dataflash address, ");
@@ -280,7 +286,9 @@ ulong genimg_get_image(ulong img_addr)
 			ram_addr + h_size);
 
 		dma_copy(img_addr + h_size, (char *)(buf + h_size), d_size);
-		invalidate_dcache_range((buf + h_size), d_size);
+		invalidate_dcache_range((buf + ALIGN(h_size, ARCH_DMA_MINALIGN)),
+		                        (buf + ALIGN(h_size, ARCH_DMA_MINALIGN) +
+								ALIGN(d_size, ARCH_DMA_MINALIGN)));
 	}
 #endif /* CONFIG_HAS_DATAFLASH */
 #endif
