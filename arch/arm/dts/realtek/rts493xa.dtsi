@@ -1,0 +1,203 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (c) 2025 Realtek Semiconductor Corp. All rights reserved.
+
+/dts-v1/;
+
+#include <dt-bindings/reset/rts-resets.h>
+#include <dt-bindings/reset/rts-sysmem.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/clock/realtek,rts493xa.h>
+#include <dt-bindings/interrupt-controller/realtek,rts493xa.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "realtek,rts493xa";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&gic>;
+
+	clocks {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		soc_clk25mhz: oscillator {
+			compatible = "fixed-clock";
+			clock-output-names = "clk25mhz";
+			clock-frequency = <25000000>;
+			#clock-cells = <0>;
+		};
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			clock-frequency = <800000000>;
+			reg = <0x0>;
+			clocks = <&clks RLX_CLK_CPU_CK>;
+			operating-points = <
+			/*kHz uV*/
+			800000 0
+			600000 0
+			400000 0
+			160000 0
+			>;
+		};
+	};
+
+	gic: interrupt-controller@19280000 {
+		compatible = "arm,cortex-a7-gic";
+		interrupt-controller;
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		reg = <0x19281000 0x1000>,  //GIC Distributor register base
+		      <0x19282000 0x2000>;  //GIC CPU interface register base
+	};
+
+	timer {
+		compatible = "arm,armv7-timer";
+		clock-frequency = <25000000>;
+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	soc {
+		compatible = "sheipa-bus", "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		reset: reset-controller@188d8000 {
+			compatible = "realtek,rts493xa-reset";
+			reg = <0x188d8000 0x1000>;
+			#reset-cells = <1>;
+		};
+
+		sysmem: reset-controller@188c0000 {
+			compatible = "realtek,rts493xa-sysmem";
+			reg = <0x188c0000 0x1000>;
+			#reset-cells = < 1>;
+		};
+
+		clks: clks@188d0000 {
+			compatible = "realtek,rts493xa-clocks";
+			#clock-cells = <1>;
+			reg = <0x188d0000 0x1000>, <0x188b0000 0x400>;
+		};
+
+		eth0: rtl8168@18400000 {
+			compatible = "realtek,rts493xa-r8168";
+			reg = <0x18400000 0x1000>, <0x18862000 0x1000>;
+			interrupt-parent = <&gic>;
+			interrupts = <GIC_SPI BSP_IRQ_ETH IRQ_TYPE_LEVEL_HIGH>;
+			resets = <&reset FORCE_RESET_ETHERNET>,            \
+					<&reset FORCE_RESET_FEPHY>, \
+					<&sysmem SYS_MEM_SD_ETH>;
+			reset-names = "eth-reset", "fephy-reset", "eth-mem-up";
+			status = "disabled";
+		};
+
+		spi0: spic@18030000 {
+			compatible = "realtek,rts493xa-quadspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			bus_num = <0>;
+			reg = <0x18030000 0x10000>, <0x18860080 0x28>;
+			clocks = <&clks RLX_CLK_DRAM_CK>;
+			clock-names = "spi_ck";
+			spi-deactivate-delay = <0>;
+			spi-max-frequency = <30000000>;
+			spi-transfer-channel = "dual";
+			interrupt-parent = <&gic>;
+			interrupts = <GIC_SPI BSP_IRQ_SPI_NOR IRQ_TYPE_LEVEL_HIGH>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi_default_mode>;
+			status = "disabled";
+		};
+
+		usb_device: usb_device@18290000 {
+			compatible = "realtek,rts493xa-usb-device";
+			reg = <0x18290000 0x900>, <0x18280000 0x2000>;
+			interrupts =	\
+				<GIC_SPI BSP_IRQ_USB_DEV IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI BSP_IRQ_USB_PHY IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-parent = <&gic>;
+			resets = <&reset FORCE_RESET_U2DEV>,	\
+				 <&sysmem SYS_MEM_SD_U2DEV>;
+			reset-names = "reset-usb-device", "u2dev-sysmem-up";
+			pinctrl-names = "default";
+			pinctrl-0 = <&usbd_default_mode>;
+			status = "disabled";
+		};
+
+		sdhc0: mmc_sdhc@18300000 {
+			compatible = "realtek,rts493xa-sdhc";
+			reg = <0x18300000 0x100000>;
+			interrupts = <GIC_SPI BSP_IRQ_SDIO0 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-parent = <&gic>;
+			clock-names = "sd_crc_ck", "sd_sample_ck", "sd_push_ck";
+			clocks = <&clks RLX_CLK_SD0_CRC_CK>,	\
+				 <&clks RLX_CLK_SD0_SAMPLE_CK>,	\
+				 <&clks RLX_CLK_SD0_PUSH_CK>;
+			resets = <&reset FORCE_RESET_SDIO0>,    \
+				<&sysmem SYS_MEM_SD_SDIO0>;
+			reset-names = "reset-sd-device", "sdio-sysmem-up";
+			pinctrl-names = "default", "pullup", "pulldown";
+			pinctrl-0 = <&sdhc0_default_mode>;
+			pinctrl-1 = <&sdhc0_pullup_mode>;
+			pinctrl-2 = <&sdhc0_pulldown_mode>;
+			disable-wp;
+			cd-inverted;
+			bus-width = <4>;
+			cap-sd-highspeed;
+			cap-mmc-highspeed;
+			status = "disabled";
+		};
+
+		sdhc1: mmc_sdhc@18700000 {
+			compatible = "realtek,rts493xa-sdhc";
+			reg = <0x18700000 0x100000>;
+			interrupts = <GIC_SPI BSP_IRQ_SDIO1 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-parent = <&gic>;
+			clock-names = "sd_crc_ck", "sd_sample_ck", "sd_push_ck";
+			clocks = <&clks RLX_CLK_SD1_CRC_CK>,	\
+				 <&clks RLX_CLK_SD1_SAMPLE_CK>,	\
+				 <&clks RLX_CLK_SD1_PUSH_CK>;
+			resets = <&reset FORCE_RESET_SDIO1>,    \
+				 <&sysmem SYS_MEM_SD_SDIO1>;
+			reset-names = "reset-sd-device", "sdio-sysmem-up";
+			pinctrl-names = "default", "pullup", "pulldown";
+			pinctrl-0 = <&sdhc1_default_mode>;
+			pinctrl-1 = <&sdhc1_pullup_mode>;
+			pinctrl-2 = <&sdhc1_pulldown_mode>;
+			disable-wp;
+			cd-inverted;
+			bus-width = <4>;
+			cap-sd-highspeed;
+			cap-mmc-highspeed;
+			status = "disabled";
+		};
+
+		pinctrl: pinctrl@18800000 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+			compatible = "realtek,rts493xa-pinctrl";
+			reg = <0x18800000 0x10000 0x18300000 0x100000
+				0x18700000 0x100000 0x185000d4 0x4>;
+			interrupts = <GIC_SPI BSP_IRQ_GPIO IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-parent = <&gic>;
+			pwm-etnled-mapping = /bits/ 32 <0 1 2 0>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-numbers = <89>;
+			status = "disabled";
+		};
+	};
+};

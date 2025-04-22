@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (c) 2025 Realtek Semiconductor Corp. All rights reserved.
+
+#include "rts4930a.dtsi"
+
+/ {
+	model = "RTS4930A EVB";
+	compatible = "realtek,rts4930a-evb","realtek,rts493xa";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&gic>;
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x80000000 0x8000000>;
+	};
+
+	chosen {
+		bootargs = "console=ttyS1,57600 init=/sbin/init earlyprintk psci=enable root=/dev/mtdblock4 rootfstype=squashfs user_debug=31";
+	};
+};
+
+&spi0 {
+	status = "okay";
+	swp_enable;
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		global@0 {
+			label = "global";
+			reg = <0x000000 0x8000000>; //flash size, 128M
+			type = "nor";
+			sector_size = <0x10000>;
+		};
+
+		partition@0 {
+			label = "u-boot";
+			reg = <0x000000 0xC0000>; //8*64K for uboot
+		};
+
+		partition@C00000 {
+			label = "uboot-env";
+			reg = <0x0C0000 0x40000>; //4*64K for uboot env
+		};
+
+		partition@100000 {
+			label = "kernel";
+			reg = <0x100000 0x440000>; // 34*128K
+		};
+
+		partition@540000 {
+			label = "rofs";
+			reg = <0x540000 0x5B00000>; //728*128K
+		};
+
+		partition@6040000 {
+			label = "rwfs";
+			reg = <0x6040000 0x1FC0000>; //254*128K
+		};
+	};
+};
