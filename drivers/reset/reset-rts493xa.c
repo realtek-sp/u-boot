@@ -29,57 +29,57 @@
 #include <reset-uclass.h>
 #include <linux/err.h>
 #include <asm/io.h>
-#include <dt-bindings/reset/rts3917-reset.h>
+#include <dt-bindings/reset/rts493xa-reset.h>
 
-#define FORCE_DRAM_OSD_RESET BIT(10)
-#define FORCE_BUS_SD1_RESET BIT(9)
-#define FORCE_BUS_VIDEO_RESET BIT(8)
-#define FORCE_BUS_SD0_RESET BIT(7)
-#define FORCE_BUS_I2S_RESET BIT(6)
-#define FORCE_BUS_U2DEV_RESET BIT(5)
+#define FORCE_DRAM_OSD_RESET   BIT(10)
+#define FORCE_BUS_SD1_RESET    BIT(9)
+#define FORCE_BUS_VIDEO_RESET  BIT(8)
+#define FORCE_BUS_SD0_RESET    BIT(7)
+#define FORCE_BUS_I2S_RESET    BIT(6)
+#define FORCE_BUS_U2DEV_RESET  BIT(5)
 #define FORCE_BUS_U2HOST_RESET BIT(4)
-#define FORCE_BUS_RESET BIT(3)
-#define FORCE_XB2_RESET BIT(2)
-#define FORCE_CPU_RESET BIT(1)
-#define FORCE_DRAM_RESET BIT(0)
+#define FORCE_BUS_RESET	       BIT(3)
+#define FORCE_XB2_RESET	       BIT(2)
+#define FORCE_CPU_RESET	       BIT(1)
+#define FORCE_DRAM_RESET       BIT(0)
 
-#define FORCE_DRAM_LCDC_RESET BIT(13)
-#define FORCE_BUS_SHA256_RESET BIT(12)
-#define FORCE_DRAM_RSA_RESET BIT(11)
+#define FORCE_DRAM_LCDC_RESET	BIT(13)
+#define FORCE_BUS_SHA256_RESET	BIT(12)
+#define FORCE_DRAM_RSA_RESET	BIT(11)
 #define FORCE_DRAM_H265PP_RESET BIT(10)
-#define FORCE_FEPHY_RESET BIT(5)
-#define FORCE_LCDC_RESET BIT(4)
-#define FORCE_RTC32K_RESET BIT(3)
-#define FORCE_U2DEV_UTMI_RESET BIT(2)
+#define FORCE_FEPHY_RESET	BIT(5)
+#define FORCE_LCDC_RESET	BIT(4)
+#define FORCE_RTC32K_RESET	BIT(3)
+#define FORCE_U2DEV_UTMI_RESET	BIT(2)
 #define FORCE_U2HOST_UTMI_RESET BIT(1)
 
 #define FORCE_ZOOM_ISP_CLK_ASYNC_RESET BIT(24)
-#define FORCE_UART2_CLK_ASYNC_RESET BIT(23)
-#define FORCE_UART1_CLK_ASYNC_RESET BIT(22)
-#define FORCE_MIPI_TX_CLK_ASYNC_RESET BIT(21)
+#define FORCE_UART2_CLK_ASYNC_RESET    BIT(23)
+#define FORCE_UART1_CLK_ASYNC_RESET    BIT(22)
+#define FORCE_MIPI_TX_CLK_ASYNC_RESET  BIT(21)
 #define FORCE_DRAM_JPG_CLK_ASYNC_RESET BIT(20)
-#define FORCE_NN_CORE_CLK_ASYNC_RESET BIT(19)
-#define FORCE_DRAM_NN_CLK_ASYNC_RESET BIT(18)
-#define FORCE_OTP_CLK_ASYNC_RESET BIT(17)
-#define FORCE_TRNG_CLK_ASYNC_RESET BIT(16)
-#define FORCE_SD1_CLK_ASYNC_RESET BIT(15)
-#define FORCE_H265_CCLK_ASYNC_RESET BIT(14)
-#define FORCE_H265_BCLK_ASYNC_RESET BIT(13)
-#define FORCE_H265_ACLK_ASYNC_RESET BIT(12)
-#define FORCE_CODEC_CLK_ASYNC_RESET BIT(11)
-#define FORCE_SPDIF_CLK_ASYNC_RESET BIT(10)
-#define FORCE_I2C1_CLK_ASYNC_RESET BIT(9)
-#define FORCE_I2C0_CLK_ASYNC_RESET BIT(8)
-#define FORCE_UART0_CLK_ASYNC_RESET BIT(7)
+#define FORCE_NN_CORE_CLK_ASYNC_RESET  BIT(19)
+#define FORCE_DRAM_NN_CLK_ASYNC_RESET  BIT(18)
+#define FORCE_OTP_CLK_ASYNC_RESET      BIT(17)
+#define FORCE_TRNG_CLK_ASYNC_RESET     BIT(16)
+#define FORCE_SD1_CLK_ASYNC_RESET      BIT(15)
+#define FORCE_H265_CCLK_ASYNC_RESET    BIT(14)
+#define FORCE_H265_BCLK_ASYNC_RESET    BIT(13)
+#define FORCE_H265_ACLK_ASYNC_RESET    BIT(12)
+#define FORCE_CODEC_CLK_ASYNC_RESET    BIT(11)
+#define FORCE_SPDIF_CLK_ASYNC_RESET    BIT(10)
+#define FORCE_I2C1_CLK_ASYNC_RESET     BIT(9)
+#define FORCE_I2C0_CLK_ASYNC_RESET     BIT(8)
+#define FORCE_UART0_CLK_ASYNC_RESET    BIT(7)
 #define FORCE_ETHERNET_CLK_ASYNC_RESET BIT(6)
-#define FORCE_SD0_CLK_ASYNC_RESET BIT(5)
-#define FORCE_CIPHER_CLK_ASYNC_RESET BIT(4)
-#define FORCE_I2S_CLK_ASYNC_RESET BIT(3)
-#define FORCE_ISP_CLK_ASYNC_RESET BIT(2)
-#define FORCE_JPG_CLK_ASYNC_RESET BIT(1)
-#define FORCE_MIPI_CLK_ASYNC_RESET BIT(0)
+#define FORCE_SD0_CLK_ASYNC_RESET      BIT(5)
+#define FORCE_CIPHER_CLK_ASYNC_RESET   BIT(4)
+#define FORCE_I2S_CLK_ASYNC_RESET      BIT(3)
+#define FORCE_ISP_CLK_ASYNC_RESET      BIT(2)
+#define FORCE_JPG_CLK_ASYNC_RESET      BIT(1)
+#define FORCE_MIPI_CLK_ASYNC_RESET     BIT(0)
 
-#define FORCE_REG_RESET_FWC 4
+#define FORCE_REG_RESET_FWC   4
 #define FORCE_REG_ASYNC_RESET 8
 
 struct rts_reset_data {
@@ -109,7 +109,7 @@ struct rts_reset_data {
 		RTS_FRR_CLR(addr, mask); \
 	} while (0)
 
-static int rts3917_reset_request(struct reset_ctl *reset_ctl)
+static int rts493xa_reset_request(struct reset_ctl *reset_ctl)
 {
 	struct rts_reset_data *rdata = dev_get_priv(reset_ctl->dev);
 
@@ -292,7 +292,7 @@ static int rts3917_reset_request(struct reset_ctl *reset_ctl)
 	return 0;
 }
 
-static int rts3917_reset_deassert(struct reset_ctl *reset_ctl)
+static int rts493xa_reset_deassert(struct reset_ctl *reset_ctl)
 {
 	struct rts_reset_data *rdata = dev_get_priv(reset_ctl->dev);
 
@@ -385,7 +385,7 @@ static int rts3917_reset_deassert(struct reset_ctl *reset_ctl)
 	return 0;
 }
 
-static int rts3917_reset_assert(struct reset_ctl *reset_ctl)
+static int rts493xa_reset_assert(struct reset_ctl *reset_ctl)
 {
 	struct rts_reset_data *rdata = dev_get_priv(reset_ctl->dev);
 
@@ -484,7 +484,7 @@ static void rts_force_reset_hw_init(u32 base_addr)
 			    FORCE_U2HOST_UTMI_RESET);
 }
 
-static int rts3917_reset_probe(struct udevice *dev)
+static int rts493xa_reset_probe(struct udevice *dev)
 {
 	struct rts_reset_data *rdata = dev_get_priv(dev);
 
@@ -498,22 +498,22 @@ static int rts3917_reset_probe(struct udevice *dev)
 	return 0;
 }
 
-static const struct udevice_id rts3917_reset_ids[] = {
-	{ .compatible = "realtek,rts3917-reset" },
+static const struct udevice_id rts493xa_reset_ids[] = {
+	{ .compatible = "realtek,rts493xa-reset" },
 	{}
 };
 
-struct reset_ops rts3917_reset_ops = {
-	.request = rts3917_reset_request,
-	.rst_assert = rts3917_reset_assert,
-	.rst_deassert = rts3917_reset_deassert,
+struct reset_ops rts493xa_reset_ops = {
+	.request = rts493xa_reset_request,
+	.rst_assert = rts493xa_reset_assert,
+	.rst_deassert = rts493xa_reset_deassert,
 };
 
-U_BOOT_DRIVER(rts3917_reset) = {
-	.name = "rts3917_reset",
+U_BOOT_DRIVER(rts493xa_reset) = {
+	.name = "rts493xa_reset",
 	.id = UCLASS_RESET,
-	.of_match = rts3917_reset_ids,
-	.probe = rts3917_reset_probe,
-	.ops = &rts3917_reset_ops,
+	.of_match = rts493xa_reset_ids,
+	.probe = rts493xa_reset_probe,
+	.ops = &rts493xa_reset_ops,
 	.priv_auto = sizeof(struct rts_reset_data),
 };

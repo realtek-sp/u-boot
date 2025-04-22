@@ -1342,7 +1342,7 @@ static int rts_udc_ofdata_to_platdata(struct udevice *dev)
 }
 
 static const struct udevice_id rts_udc_ids[] = {
-	{ .compatible = "realtek,rts3917-usb-device" },
+	{ .compatible = "realtek,rts493xa-usb-device" },
 	{},
 };
 #endif

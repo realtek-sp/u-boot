@@ -34,15 +34,15 @@
 #include <linux/clk-provider.h>
 #include "clk.h"
 
-#include <dt-bindings/clock/rts3917-clock.h>
-#include "clk-rts3917.h"
+#include <dt-bindings/clock/rts493xa-clock.h>
+#include "clk-rts493xa.h"
 
-static inline u32 rts_clk_readl(struct rts3917_clk_priv *priv, u32 offset)
+static inline u32 rts_clk_readl(struct rts493xa_clk_priv *priv, u32 offset)
 {
 	return readl(priv->clk_mapped_addr + offset);
 }
 
-static inline void rts_clk_writel(struct rts3917_clk_priv *priv,
+static inline void rts_clk_writel(struct rts493xa_clk_priv *priv,
 				  unsigned int val, u32 offset)
 {
 	writel(val, priv->clk_mapped_addr + offset);
@@ -311,7 +311,7 @@ static int rlx_gpll_enable_clk(struct clk *clk)
 {
 	u32 reg;
 	u32 time = 5000;
-	// struct rts3917_clk_priv *priv = dev_get_priv(clk->dev);
+	// struct rts493xa_clk_priv *priv = dev_get_priv(clk->dev);
 	struct clk_gate *gate = (struct clk_gate *)to_clk_gate(clk);
 
 	reg = readl(gate->reg + GPLL_SCCG_CFG2);
@@ -348,7 +348,7 @@ static int rlx_gpll_enable_clk(struct clk *clk)
 static int rlx_gpll_disable_clk(struct clk *clk)
 {
 	u32 reg;
-	// struct rts3917_clk_priv *priv = dev_get_priv(clk->dev);
+	// struct rts493xa_clk_priv *priv = dev_get_priv(clk->dev);
 	struct clk_gate *gate = (struct clk_gate *)to_clk_gate(clk);
 
 	reg = readl(gate->reg + GPLL_CTRL);
@@ -381,7 +381,7 @@ static const struct clk_ops clk_rts_gpll_gate_ops = {
 	.disable = rlx_gpll_disable_clk,
 };
 
-static struct clk *rlx_register_gpll_clk(struct rts3917_clk_priv *priv,
+static struct clk *rlx_register_gpll_clk(struct rts493xa_clk_priv *priv,
 					 struct clk_rlx *rlxclk, int flags)
 {
 	struct clk *clk = ERR_PTR(-ENOMEM);
@@ -576,7 +576,7 @@ static const struct clk_ops clk_rts_decdivider_ops = {
 	.round_rate = rlx_decround_rate,
 };
 
-static struct clk *rlx_register_decdivider_clk(struct rts3917_clk_priv *priv,
+static struct clk *rlx_register_decdivider_clk(struct rts493xa_clk_priv *priv,
 					       struct clk_rlx *rlxclk,
 					       int flags)
 {
@@ -689,7 +689,7 @@ static const struct clk_ops rts_clk_divider_ops = {
 	// .round_rate = rts_clk_round_rate,
 };
 
-static struct clk *rlx_register_common_clk(struct rts3917_clk_priv *priv,
+static struct clk *rlx_register_common_clk(struct rts493xa_clk_priv *priv,
 					   struct clk_rlx *rlxclk, int flags)
 {
 	struct clk *clk = ERR_PTR(-ENOMEM);
@@ -761,7 +761,7 @@ fail:
 	return ERR_CAST(clk);
 }
 
-static void rlx_clock_hw_init(struct rts3917_clk_priv *priv)
+static void rlx_clock_hw_init(struct rts493xa_clk_priv *priv)
 {
 	u32 reg;
 
@@ -780,7 +780,7 @@ static void rlx_clock_hw_init(struct rts3917_clk_priv *priv)
 	rts_clk_writel(priv, reg, SSOR_CLK_OE_R);
 }
 
-static int rts3917_clk_init(struct rts3917_clk_priv *priv)
+static int rts493xa_clk_init(struct rts493xa_clk_priv *priv)
 {
 	int i;
 
@@ -1050,9 +1050,9 @@ static int rts3917_clk_init(struct rts3917_clk_priv *priv)
 	return 0;
 }
 
-static int rts3917_clk_probe(struct udevice *dev)
+static int rts493xa_clk_probe(struct udevice *dev)
 {
-	struct rts3917_clk_priv *priv = dev_get_priv(dev);
+	struct rts493xa_clk_priv *priv = dev_get_priv(dev);
 
 	priv->clk_mapped_addr = devfdt_get_addr_index_ptr(dev, 0);
 	if (!priv->clk_mapped_addr)
@@ -1062,22 +1062,22 @@ static int rts3917_clk_probe(struct udevice *dev)
 		return -EINVAL;
 
 	priv->num_clks = RLX_CLK_NUM_SIZE;
-	rts3917_clk_init(priv);
+	rts493xa_clk_init(priv);
 
 	return 0;
 }
 
-static const struct udevice_id rts3917_clk_ids[] = {
-	{ .compatible = "realtek,rts3917-clocks" },
+static const struct udevice_id rts493xa_clk_ids[] = {
+	{ .compatible = "realtek,rts493xa-clocks" },
 	{}
 };
 
-U_BOOT_DRIVER(rts3917_clk) = {
-	.name = "rts3917_clk",
+U_BOOT_DRIVER(rts493xa_clk) = {
+	.name = "rts493xa_clk",
 	.id = UCLASS_CLK,
-	.of_match = rts3917_clk_ids,
+	.of_match = rts493xa_clk_ids,
 	.ops = &ccf_clk_ops,
-	.priv_auto = sizeof(struct rts3917_clk_priv),
-	.probe = rts3917_clk_probe,
+	.priv_auto = sizeof(struct rts493xa_clk_priv),
+	.probe = rts493xa_clk_probe,
 	.flags = DM_FLAG_PRE_RELOC,
 };

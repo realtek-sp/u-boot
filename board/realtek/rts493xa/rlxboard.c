@@ -20,10 +20,10 @@
 #include <rts_gpio.h>
 
 DECLARE_GLOBAL_DATA_PTR;
-#define get_val(addr)		REG32(addr)
-#define set_val(addr, val)	REG32(addr) = (val)
-#define clear_bit(addr, val)	set_val((addr), (get_val(addr) & ~(val)))
-#define set_bit(addr, val)	set_val((addr), (get_val(addr) | (val)))
+#define get_val(addr)	     REG32(addr)
+#define set_val(addr, val)   REG32(addr) = (val)
+#define clear_bit(addr, val) set_val((addr), (get_val(addr) & ~(val)))
+#define set_bit(addr, val)   set_val((addr), (get_val(addr) | (val)))
 
 void write_mask(u32 reg, u32 bit, u32 mask)
 {
@@ -94,7 +94,8 @@ void config_bisr(void)
 	mdio_rdata = REG32(CPU_BISR_FAIL);
 	if ((mdio_rdata & (CA7_BISR_REPAIRED | CA7_BISR_FAIL)) == 0)
 		printf("memory dont need repair\n");
-	else if (((mdio_rdata & CA7_BISR_FAIL) == 0) && ((mdio_rdata & CA7_BISR_REPAIRED) == CA7_BISR_REPAIRED))
+	else if (((mdio_rdata & CA7_BISR_FAIL) == 0) &&
+		 ((mdio_rdata & CA7_BISR_REPAIRED) == CA7_BISR_REPAIRED))
 		printf("memory repaired!\n");
 	else
 		printf("memory can not be repaired!\n");
@@ -114,7 +115,8 @@ void config_bisr(void)
 	mdio_rdata = REG32(CPU_BISR_FAIL);
 	if ((mdio_rdata & (CA7_BISR_REPAIRED | CA7_BISR_FAIL)) == 0)
 		printf("memory dont need repair\n");
-	else if (((mdio_rdata & CA7_BISR_FAIL) == 0) && ((mdio_rdata & CA7_BISR_REPAIRED) == CA7_BISR_REPAIRED))
+	else if (((mdio_rdata & CA7_BISR_FAIL) == 0) &&
+		 ((mdio_rdata & CA7_BISR_REPAIRED) == CA7_BISR_REPAIRED))
 		printf("memory repaired!\n");
 	else
 		printf("memory can not be repaired!\n");
@@ -141,7 +143,7 @@ int get_dram_clock(void)
 	dpi_n_code = REG32(DDR_PHY_SSC3) & 0xff;
 
 	/* clock = REF_PLL * (dpi_f_code * 2 / 2048 + (dpi_n_code + 3) * 2) */
-	clock  = ((50  * dpi_f_code * 2 + 2048)  >> 12) +
+	clock = ((50 * dpi_f_code * 2 + 2048) >> 12) +
 		25 * (dpi_n_code + 3) * 2;
 
 	return (int)clock;
@@ -174,32 +176,32 @@ int dram_init(void)
 	REG32(0x83FFFFF8) = 0x04000000;
 
 	mdelay(1);
-//	printf(" detect size is 0x%x\n", REG32(0xBFFFFFF8));
+	//	printf(" detect size is 0x%x\n", REG32(0xBFFFFFF8));
 	dram_size = REG32(0xBFFFFFF8);
 	REG32(PCTL_DRAM_SIZE) = dram_size - 1;
 
 	drr_value_temp = REG32(PCTL_DRR);
 
 	/* change trfc parameter for external ddr */
-#ifdef CONFIG_RTS3917_BGA240_DDR3_GENERAL
+#ifdef CONFIG_RTS493XA_BGA240_DDR3_GENERAL
 	if (dram_size == 0x08000000) {
 		REG32(PCTL_DRR) = (drr_value_temp & 0xffffff00) |
-			(110000 / PCTL_PERIOD_PS + 1);
+				  (110000 / PCTL_PERIOD_PS + 1);
 	}
 
 	if (dram_size == 0x10000000) {
 		REG32(PCTL_DRR) = (drr_value_temp & 0xffffff00) |
-			(160000 / PCTL_PERIOD_PS + 1);
+				  (160000 / PCTL_PERIOD_PS + 1);
 	}
 
 	if (dram_size == 0x20000000) {
 		REG32(PCTL_DRR) = (drr_value_temp & 0xffffff00) |
-			(260000 / PCTL_PERIOD_PS + 1);
+				  (260000 / PCTL_PERIOD_PS + 1);
 	}
 
 	if (dram_size == 0x40000000) {
 		REG32(PCTL_DRR) = (drr_value_temp & 0xffffff00) |
-			(350000 / PCTL_PERIOD_PS + 1);
+				  (350000 / PCTL_PERIOD_PS + 1);
 	}
 	REG32(PCTL_CCR) = 0x80000000;
 #endif
@@ -234,12 +236,12 @@ void load_otp(void)
 
 int checkboard(void)
 {
-	printf("Board: IPCAM RTS3917\n");
+	printf("Board: IPCAM RTS493XA\n");
 	printf("CPU:   ARM Cortex-A @ %dM\n", 800);
 
 	load_otp();
 
-        return 0;
+	return 0;
 }
 
 u8 get_rst_mode(void)
@@ -302,7 +304,7 @@ int board_early_init_r(void)
 #if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(MMC_RTS)
 static const struct rts_mmc_plat rts_mmc0_plat = {
 	.base_addr = RTS_MMC_BASEADDR,
-	.cfg.name  = "rtsmmc",
+	.cfg.name = "rtsmmc",
 	.cfg.f_max = RTS_MMC_DUMMY_F_MAX,
 	.cfg.f_min = RTS_MMC_DUMMY_F_MIN,
 	.cfg.b_max = RTS_MMC_MAX_BLOCK_LEN,
@@ -316,9 +318,7 @@ U_BOOT_DRVINFO(rts_mmc0) = {
 #endif
 
 #if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(RTS_GPIO)
-U_BOOT_DRVINFO(rts_gpio) = {
-	.name = "rts_gpio"
-};
+U_BOOT_DRVINFO(rts_gpio) = { .name = "rts_gpio" };
 #endif
 
 #if !CONFIG_IS_ENABLED(OF_CONTROL) && CONFIG_IS_ENABLED(RTL8168)

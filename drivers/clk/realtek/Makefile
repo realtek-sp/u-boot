@@ -1,1 +1,1 @@
-obj-$(CONFIG_BOARD_RTS3917) += clk-rts3917.o
+obj-$(CONFIG_BOARD_RTS493XA) += clk-rts493xa.o

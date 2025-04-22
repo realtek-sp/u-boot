@@ -4923,8 +4923,7 @@ static void rtl8168_powerup_pll(struct udevice *dev)
 	rtl8168_phy_power_up (dev);
 }
 
-#if ((defined CONFIG_BOARD_RTS3917 || defined CONFIG_BOARD_RTS3921) && \
-	(defined CONFIG_TARGET_ASIC))
+#if ((defined CONFIG_BOARD_RTS493XA) && (defined CONFIG_TARGET_ASIC))
 static void rtl8168_rcalibration_setting(struct udevice *dev)
 {
 	struct rtl8168_private *tp = dev_get_priv(dev);
@@ -4983,8 +4982,7 @@ static int rtl8168_init(struct udevice *dev)
 
 	rtl8168_hw_reset(dev);
 
-#if ((defined CONFIG_BOARD_RTS3917 || defined CONFIG_BOARD_RTS3921) && \
-	(defined CONFIG_TARGET_ASIC))
+#if ((defined CONFIG_BOARD_RTS493XA) && (defined CONFIG_TARGET_ASIC))
 	rtl8168_rcalibration_setting(dev);
 #endif
 
@@ -5731,7 +5729,7 @@ int rtl8168_initialize(struct udevice *dev, const char *name)
 	rtd_outl(SYS_MEM_SD, rtd_inl(SYS_MEM_SD) & ~ETH_MEM_SD);
 	mdelay(5);
 
-#if (defined CONFIG_BOARD_RTS3917 || defined CONFIG_BOARD_RTS3921)
+#if (defined CONFIG_BOARD_RTS493XA)
 	/*reset MAC, hold */
 	tmp1 = rtd_inl(FORCE_REG_ASYNC_RST);
 	rtd_outl(FORCE_REG_ASYNC_RST, tmp1 | FORCE_ETHERNET_RST);
@@ -5742,7 +5740,7 @@ int rtl8168_initialize(struct udevice *dev, const char *name)
  *	rtd_outl(FORCE_REG_RST_FWC, (tmp2 | FORCE_FEPHY_RST));
  *	mdelay(5);
  */
- #ifdef CONFIG_EXTERNAL_RMII
+#ifdef CONFIG_EXTERNAL_RMII
 	printf("extern phy + ");
 
 	/*select external phy*/
@@ -6049,8 +6047,8 @@ static const struct eth_ops rtl8168_eth_ops = {
 
 #if CONFIG_IS_ENABLED(OF_CONTROL)
 static const struct udevice_id rtl8168_eth_ids[] = {
-	{ .compatible = "realtek,rts3917-r8168" },
-	{ }
+	{ .compatible = "realtek,rts493xa-r8168" },
+	{}
 };
 #endif
 

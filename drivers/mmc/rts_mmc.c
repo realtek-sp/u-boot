@@ -29,7 +29,7 @@
 #include <cpu_func.h>
 #include <dm/pinctrl.h>
 #include <reset.h>
-#include <dt-bindings/clock/rts3917-clock.h>
+#include <dt-bindings/clock/rts493xa-clock.h>
 
 #define clear_bit(addr, val) writel((readl(addr) & ~(val)), addr)
 #define set_bit(addr, val)   writel((readl(addr) | (val)), addr)
@@ -1370,8 +1370,8 @@ static int rts_mmc_bind(struct udevice *dev)
 
 #if CONFIG_IS_ENABLED(OF_CONTROL)
 static const struct udevice_id rts_mmc_ids[] = {
-	{.compatible = "realtek,rts3917-sdhc"},
-	{/* sentinel */}
+	{ .compatible = "realtek,rts493xa-sdhc" },
+	{ /* sentinel */ }
 };
 #endif
 

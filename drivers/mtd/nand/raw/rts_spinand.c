@@ -123,7 +123,7 @@ static int spinand_cmd_process(struct rts_spinand_info *info,
 	case CMD_TYPE_1CH_RX:
 			controller_map->ctrlr0 = DATA_SINGLE_CH |
 			ADDR_SINGLE_CH | RECEIVE_MODE;
-#if (defined CONFIG_BOARD_RTS3917)
+#if (defined CONFIG_BOARD_RTS493XA)
 #ifdef CONFIG_TARGET_FPGA
 			controller_map->read_dummy_len =
 			cmd->n_dummy * controller_map->baudr * 2 + 1;
@@ -151,7 +151,7 @@ static int spinand_cmd_process(struct rts_spinand_info *info,
 	case CMD_TYPE_READ:
 			controller_map->ctrlr0 = info->spi_dev.read_type |
 			RECEIVE_MODE;
-#if (defined CONFIG_BOARD_RTS3917)
+#if (defined CONFIG_BOARD_RTS493XA)
 #ifdef CONFIG_TARGET_FPGA
 			controller_map->read_dummy_len =
 			cmd->n_dummy * controller_map->baudr * 2 +
@@ -742,7 +742,7 @@ static int spinand_setautoread_para(struct rts_spinand_info *info)
 	 *but in 3915 ic internal read dummy central point
 	 *is equal to baudr.
 	 */
-#if (defined CONFIG_BOARD_RTS3917)
+#if (defined CONFIG_BOARD_RTS493XA)
 #ifdef CONFIG_TARGET_FPGA
 	controller_map->baudr = 1;
 	controller_map->read_dummy_len =
@@ -1532,7 +1532,7 @@ int rts_spinand_ecc_init(struct nand_chip *nand)
 
 static const struct udevice_id rts_spinand_ids[] = {
 	{
-		.compatible = "realtek,rts3917-quadspi-nfc",
+		.compatible = "realtek,rts493xa-quadspi-nfc",
 	},
 	{ /* sentinel */ }
 };

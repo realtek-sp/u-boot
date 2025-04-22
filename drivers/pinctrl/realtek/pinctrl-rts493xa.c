@@ -29,15 +29,15 @@
 #include <dm/device_compat.h>
 #include <dm/pinctrl.h>
 
-#include "pinctrl-rts3917.h"
+#include "pinctrl-rts493xa.h"
 
-struct rts3917_pinctrl_priv {
+struct rts493xa_pinctrl_priv {
 	void __iomem *addr;
 };
 
 #if CONFIG_IS_ENABLED(PINCONF)
 
-static const struct pinconf_param rts3917_conf_params[] = {
+static const struct pinconf_param rts493xa_conf_params[] = {
 	{ "bias-disable", PIN_CONFIG_BIAS_DISABLE, 0 },
 	{ "bias-pull-up", PIN_CONFIG_BIAS_PULL_UP, 1 },
 	{ "bias-pull-down", PIN_CONFIG_BIAS_PULL_DOWN, 1 },
@@ -74,10 +74,10 @@ static struct sharepin_cfg_addr *rts_get_pinaddr(int pin)
 	return 0;
 }
 
-static int rts3917_pinconf_set(struct udevice *dev, unsigned int pin,
-			       unsigned int param, unsigned int arg)
+static int rts493xa_pinconf_set(struct udevice *dev, unsigned int pin,
+				unsigned int param, unsigned int arg)
 {
-	struct rts3917_pinctrl_priv *priv = dev_get_priv(dev);
+	struct rts493xa_pinctrl_priv *priv = dev_get_priv(dev);
 	struct pinregs *regs;
 	struct sharepin_cfg_addr *sc;
 	int bf;
@@ -134,9 +134,9 @@ static int rts3917_pinconf_set(struct udevice *dev, unsigned int pin,
 }
 
 /* set the pin config settings for a specified pin group */
-static int rts3917_pinconf_group_set(struct udevice *dev,
-				     unsigned int num_configs,
-				     unsigned int configs, unsigned int arg)
+static int rts493xa_pinconf_group_set(struct udevice *dev,
+				      unsigned int num_configs,
+				      unsigned int configs, unsigned int arg)
 {
 	const unsigned int *pins;
 	unsigned int cnt;
@@ -144,51 +144,51 @@ static int rts3917_pinconf_group_set(struct udevice *dev,
 	dev_dbg(dev, "num_configs %#x, configs %#x\n", num_configs, configs);
 	pins = rts_pin_groups[num_configs].pins;
 	for (cnt = 0; cnt < rts_pin_groups[num_configs].num_pins; cnt++)
-		rts3917_pinconf_set(dev, pins[cnt], configs, arg);
+		rts493xa_pinconf_set(dev, pins[cnt], configs, arg);
 
 	return 0;
 }
 
 #endif
 
-static int rts3917_get_pins_count(struct udevice *dev)
+static int rts493xa_get_pins_count(struct udevice *dev)
 {
 	return ARRAY_SIZE(rts_gpio_pins);
 }
 
-static const char *rts3917_get_pin_name(struct udevice *dev,
-					unsigned int selector)
+static const char *rts493xa_get_pin_name(struct udevice *dev,
+					 unsigned int selector)
 {
 	return rts_gpio_pins[selector].name;
 }
 
-static int rts3917_get_functions_count(struct udevice *dev)
+static int rts493xa_get_functions_count(struct udevice *dev)
 {
 	return ARRAY_SIZE(rts_functions);
 }
 
-static const char *rts3917_get_function_name(struct udevice *dev,
-					     unsigned int selector)
+static const char *rts493xa_get_function_name(struct udevice *dev,
+					      unsigned int selector)
 {
 	return rts_functions[selector].name;
 }
 
-static int rts3917_get_groups_count(struct udevice *dev)
+static int rts493xa_get_groups_count(struct udevice *dev)
 {
 	return ARRAY_SIZE(rts_pin_groups);
 }
 
-static const char *rts3917_get_group_name(struct udevice *dev,
-					  unsigned int selector)
+static const char *rts493xa_get_group_name(struct udevice *dev,
+					   unsigned int selector)
 {
 	return rts_pin_groups[selector].name;
 }
 
-static int rts3917_pinmux_group_set(struct udevice *dev,
-				    unsigned int group_selector,
-				    unsigned int func_selector)
+static int rts493xa_pinmux_group_set(struct udevice *dev,
+				     unsigned int group_selector,
+				     unsigned int func_selector)
 {
-	struct rts3917_pinctrl_priv *priv = dev_get_priv(dev);
+	struct rts493xa_pinctrl_priv *priv = dev_get_priv(dev);
 
 	dev_dbg(dev, "set_mux [grp %s][func %s]\n",
 		rts_pin_groups[group_selector].name,
@@ -395,32 +395,32 @@ static int rts3917_pinmux_group_set(struct udevice *dev,
 	return 0;
 }
 
-static struct pinctrl_ops rts3917_pinctrl_ops = {
+static struct pinctrl_ops rts493xa_pinctrl_ops = {
 	.set_state = pinctrl_generic_set_state,
-	.get_pins_count = rts3917_get_pins_count,
-	.get_pin_name = rts3917_get_pin_name,
-	.get_groups_count = rts3917_get_groups_count,
-	.get_group_name = rts3917_get_group_name,
-	.get_functions_count = rts3917_get_functions_count,
-	.get_function_name = rts3917_get_function_name,
-	// .pinmux_set = rts3917_pinmux_set,
-	.pinmux_group_set = rts3917_pinmux_group_set,
+	.get_pins_count = rts493xa_get_pins_count,
+	.get_pin_name = rts493xa_get_pin_name,
+	.get_groups_count = rts493xa_get_groups_count,
+	.get_group_name = rts493xa_get_group_name,
+	.get_functions_count = rts493xa_get_functions_count,
+	.get_function_name = rts493xa_get_function_name,
+	// .pinmux_set = rts493xa_pinmux_set,
+	.pinmux_group_set = rts493xa_pinmux_group_set,
 #if CONFIG_IS_ENABLED(PINCONF)
-	.pinconf_num_params = ARRAY_SIZE(rts3917_conf_params),
-	.pinconf_params = rts3917_conf_params,
-	.pinconf_set = rts3917_pinconf_set,
-	.pinconf_group_set = rts3917_pinconf_group_set,
+	.pinconf_num_params = ARRAY_SIZE(rts493xa_conf_params),
+	.pinconf_params = rts493xa_conf_params,
+	.pinconf_set = rts493xa_pinconf_set,
+	.pinconf_group_set = rts493xa_pinconf_group_set,
 #endif
 };
 
-static const struct udevice_id rts3917_pinctrl_ids[] = {
-	{ .compatible = "realtek,rts3917-pinctrl" },
+static const struct udevice_id rts493xa_pinctrl_ids[] = {
+	{ .compatible = "realtek,rts493xa-pinctrl" },
 	{}
 };
 
-static int rts3917_pinctrl_probe(struct udevice *dev)
+static int rts493xa_pinctrl_probe(struct udevice *dev)
 {
-	struct rts3917_pinctrl_priv *priv = dev_get_priv(dev);
+	struct rts493xa_pinctrl_priv *priv = dev_get_priv(dev);
 
 	priv->addr = dev_read_addr_ptr(dev);
 	if (!priv->addr)
@@ -429,11 +429,11 @@ static int rts3917_pinctrl_probe(struct udevice *dev)
 	return 0;
 }
 
-U_BOOT_DRIVER(rts3917_pinctrl) = {
-	.name = "rts3917_pinctrl",
+U_BOOT_DRIVER(rts493xa_pinctrl) = {
+	.name = "rts493xa_pinctrl",
 	.id = UCLASS_PINCTRL,
-	.of_match = rts3917_pinctrl_ids,
-	.priv_auto = sizeof(struct rts3917_pinctrl_priv),
-	.ops = &rts3917_pinctrl_ops,
-	.probe = rts3917_pinctrl_probe,
+	.of_match = rts493xa_pinctrl_ids,
+	.priv_auto = sizeof(struct rts493xa_pinctrl_priv),
+	.ops = &rts493xa_pinctrl_ops,
+	.probe = rts493xa_pinctrl_probe,
 };

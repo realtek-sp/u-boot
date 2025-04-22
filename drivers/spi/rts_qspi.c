@@ -1916,8 +1916,8 @@ static const struct dm_spi_ops rts_spi_ops = {
 };
 
 static const struct udevice_id rts_spi_ids[] = {
-	{ .compatible = "realtek,rts3917-quadspi" },
-	{ }
+	{ .compatible = "realtek,rts493xa-quadspi" },
+	{}
 };
 
 U_BOOT_DRIVER(rts_spi) = {

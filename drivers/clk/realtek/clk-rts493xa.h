@@ -21,8 +21,8 @@
  * even if advised of the possibility of such damage.
  */
 
-#ifndef _CLK_RTS3917_H_
-#define _CLK_RTS3917_H_
+#ifndef _CLK_RTS493XA_H_
+#define _CLK_RTS493XA_H_
 
 #include <clk-uclass.h>
 
@@ -241,7 +241,7 @@ static const char *rlx_names_ssi_div[] = { "usb_pll_5", "gpll0_2", "gpll0_3",
 
 static const char *rlx_names_v[] = { "dummy" };
 
-struct rts3917_clk_priv {
+struct rts493xa_clk_priv {
 	void __iomem *clk_mapped_addr;
 	void __iomem *pll_mapped_addr;
 	int num_clks;

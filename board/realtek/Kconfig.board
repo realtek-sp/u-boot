@@ -1,7 +1,3 @@
-if BOARD_RTS3917
-source "board/realtek/rts3917/Kconfig"
+if BOARD_RTS493XA
+source "board/realtek/rts493xa/Kconfig"
 endif
-if BOARD_RTS3921
-source "board/realtek/rts3921/Kconfig"
-endif
-

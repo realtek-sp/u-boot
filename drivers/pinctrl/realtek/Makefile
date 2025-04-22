@@ -1,4 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0
-# rts3917 pinctrl support
+# rts493xa pinctrl support
 
-obj-$(CONFIG_PINCTRL_RTS3917)	+= pinctrl-rts3917.o
+obj-$(CONFIG_PINCTRL_RTS493XA)	+= pinctrl-rts493xa.o

@@ -212,10 +212,10 @@ config RESET_DRA7
 	  Support for TI DRA7-RESET subsystem. Basic Assert/Deassert
 	  is supported.
 
-config RESET_RTS3917
-	bool "Reset controller driver for RTS3917 SoCs"
+config RESET_RTS493XA
+	bool "Reset controller driver for RTS493XA SoCs"
 	depends on DM_RESET
 	help
-	  Support for reset controller on RTS3917 SoC.
+	  Support for reset controller on RTS493XA SoC.
 	  Say Y if you want to control reset signals of different peripherals
 endmenu

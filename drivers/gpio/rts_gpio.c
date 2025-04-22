@@ -353,8 +353,8 @@ static int rts_gpio_probe(struct udevice *dev)
 
 #if CONFIG_IS_ENABLED(OF_CONTROL)
 static const struct udevice_id rts_gpio_ids[] = {
-	{.compatible = "realtek,rts3917-pinctrl"},
-	{/* sentinel */}
+	{ .compatible = "realtek,rts493xa-pinctrl" },
+	{ /* sentinel */ }
 };
 #endif
 
