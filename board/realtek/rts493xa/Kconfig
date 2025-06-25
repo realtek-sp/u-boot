@@ -24,6 +24,13 @@ config RTS493XA_QFN88_DDR3_1GBIT
 	help
 	 Enable option for QFN88 DDR3 1Gbit
 
+config RTS493XA_QFN88_DDR3_2GBIT
+	bool "QFN88 DDR3 MCM(2Gbit)"
+	depends on (TARGET_ASIC || TARGET_EMULATOR)
+	select QFN88_PACKAGE
+	help
+	 Enable option for QFN88 DDR3 2Gbit
+
 config RTS493XA_BGA240_DDR3_GENERAL
 	bool "BGA240 DDR3 External"
 	depends on (BOARD_RTS493XA && !TARGET_FPGA)
