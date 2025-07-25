@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only
 
-config PINCTRL_RTS493XA
+config PINCTRL_RTS493xA
 	bool "Pinctrl and GPIO driver for Realtek rts493xa series"
 	depends on DM && PINCTRL_GENERIC
 	help

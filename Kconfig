@@ -20,13 +20,10 @@ choice
 	help
 	  Select chip type
 
-config BOARD_RTS493XA
-	bool "RTS493XA"
+config BOARD_RTS493xA
+	bool "RTS493xA"
 	help
-	  Enable option of the IPCam chip RTS493XA,
-	  for distinguish with other chip.
-	  it will be a few of chip, so it is
-	  musted.
+	  This enables support for the Realtek RTS493X SoC family.
 endchoice
 
 choice
@@ -119,7 +116,7 @@ config SELF_EXTRACTING
 
 config FAST_BOOT
 	bool "system fast boot"
-	depends on BOARD_RTS493XA
+	depends on BOARD_RTS493xA
 	default n
 	help
 	  system fast boot configuration.
@@ -152,7 +149,7 @@ config CRYPTO_UPDATE
 
 choice
 	prompt "AES mode of operation"
-	depends on CRYPTO_BOOT && BOARD_RTS493XA
+	depends on CRYPTO_BOOT && BOARD_RTS493xA
 	default ECB_MODE
 	help
 	  Select AES operation mode.
@@ -171,7 +168,7 @@ endchoice
 
 choice
 	prompt "AES mode of length"
-	depends on CRYPTO_BOOT && BOARD_RTS493XA
+	depends on CRYPTO_BOOT && BOARD_RTS493xA
 	default AES_128
 	help
 	  Select AES mode.
@@ -198,7 +195,7 @@ config DO_IMAGE_CRC
 
 config DUAL_KERNEL_LOAD_CHECK
 	bool "Enable Dual Kernel Load Check"
-	depends on BOARD_RTS493XA && !FAST_BOOT
+	depends on BOARD_RTS493xA && !FAST_BOOT
 	select CMD_ECHO
 	select CMD_ITEST
 	select CMD_SOURCE

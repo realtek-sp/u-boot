@@ -619,7 +619,7 @@ int load_key_from_sd(void)
 	addr = CONFIG_SYS_LOAD_ADDR;
 	printf("load key from sd addr %lx\n", addr);
 
-	filename = "ipcam_crypto.bin";
+	filename = "rts493xa_crypto.bin";
 
 	bytes = 0;
 	pos = 0;
@@ -659,7 +659,7 @@ int load_iv_from_sd(void)
 	addr = CONFIG_SYS_LOAD_ADDR;
 	printf("load iv from sd addr %lx\n", addr);
 
-	filename = "ipcam_crypto_iv.bin";
+	filename = "rts493xa_crypto_iv.bin";
 
 	bytes = 0;
 	pos = 0;

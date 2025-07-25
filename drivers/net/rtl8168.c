@@ -4923,7 +4923,7 @@ static void rtl8168_powerup_pll(struct udevice *dev)
 	rtl8168_phy_power_up (dev);
 }
 
-#if ((defined CONFIG_BOARD_RTS493XA) && (defined CONFIG_TARGET_ASIC))
+#if ((defined CONFIG_BOARD_RTS493xA) && (defined CONFIG_TARGET_ASIC))
 static void rtl8168_rcalibration_setting(struct udevice *dev)
 {
 	struct rtl8168_private *tp = dev_get_priv(dev);
@@ -4982,7 +4982,7 @@ static int rtl8168_init(struct udevice *dev)
 
 	rtl8168_hw_reset(dev);
 
-#if ((defined CONFIG_BOARD_RTS493XA) && (defined CONFIG_TARGET_ASIC))
+#if ((defined CONFIG_BOARD_RTS493xA) && (defined CONFIG_TARGET_ASIC))
 	rtl8168_rcalibration_setting(dev);
 #endif
 
@@ -5729,7 +5729,7 @@ int rtl8168_initialize(struct udevice *dev, const char *name)
 	rtd_outl(SYS_MEM_SD, rtd_inl(SYS_MEM_SD) & ~ETH_MEM_SD);
 	mdelay(5);
 
-#if (defined CONFIG_BOARD_RTS493XA)
+#if (defined CONFIG_BOARD_RTS493xA)
 	/*reset MAC, hold */
 	tmp1 = rtd_inl(FORCE_REG_ASYNC_RST);
 	rtd_outl(FORCE_REG_ASYNC_RST, tmp1 | FORCE_ETHERNET_RST);

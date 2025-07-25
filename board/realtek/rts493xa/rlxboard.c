@@ -183,7 +183,7 @@ int dram_init(void)
 	drr_value_temp = REG32(PCTL_DRR);
 
 	/* change trfc parameter for external ddr */
-#ifdef CONFIG_RTS493XA_BGA240_DDR3_GENERAL
+#ifdef CONFIG_RTS493xA_BGA240_DDR3_GENERAL
 	if (dram_size == 0x08000000) {
 		REG32(PCTL_DRR) = (drr_value_temp & 0xffffff00) |
 				  (110000 / PCTL_PERIOD_PS + 1);
@@ -236,7 +236,7 @@ void load_otp(void)
 
 int checkboard(void)
 {
-	printf("Board: IPCAM RTS493XA\n");
+	printf("Board: Realtek RTS493xA\n");
 	printf("CPU:   ARM Cortex-A @ %dM\n", 800);
 
 	load_otp();

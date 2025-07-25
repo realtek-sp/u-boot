@@ -486,7 +486,7 @@ struct bist_data_b128 {
 #ifdef DDR3_1GBIT_DEMOBOARD
 
 /* QFN88 DDRC using 2133 parameter */
-#ifdef CONFIG_RTS493XA_QFN88_DDR3_1GBIT
+#ifdef CONFIG_RTS493xA_QFN88_DDR3_1GBIT
 #define CONFIG_ODT_OFF
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
@@ -780,7 +780,7 @@ struct bist_data_b128 {
 #define DDRC_SET_OFFSET 1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1066
+#ifdef CONFIG_RTS493xA_DDR_1066
 #define CONFIG_ODT_OFF
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
@@ -934,7 +934,7 @@ struct bist_data_b128 {
 #define TPD_EN		1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1333
+#ifdef CONFIG_RTS493xA_DDR_1333
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
 #define DRAM_SDR       0
@@ -1082,7 +1082,7 @@ struct bist_data_b128 {
 #define TPD_EN		1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1600
+#ifdef CONFIG_RTS493xA_DDR_1600
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
 #define DRAM_SDR       0
@@ -1236,7 +1236,7 @@ struct bist_data_b128 {
 #define TPD_EN		1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1866
+#ifdef CONFIG_RTS493xA_DDR_1866
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
 #define DRAM_SDR       0
@@ -1390,7 +1390,7 @@ struct bist_data_b128 {
 #define TPD_EN		1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_2133
+#ifdef CONFIG_RTS493xA_DDR_2133
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
 #define DRAM_SDR       0
@@ -1550,7 +1550,7 @@ struct bist_data_b128 {
 #ifdef DDR3_2GBIT_DEMOBOARD
 
 /* QFN88 DDRC using 2133 parameter */
-#ifdef CONFIG_RTS493XA_QFN88_DDR3_2GBIT
+#ifdef CONFIG_RTS493xA_QFN88_DDR3_2GBIT
 //#define CONFIG_ODT_OFF
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
@@ -1844,7 +1844,7 @@ struct bist_data_b128 {
 #define DDRC_SET_OFFSET 1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1066
+#ifdef CONFIG_RTS493xA_DDR_1066
 #define CONFIG_ODT_OFF
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
@@ -1998,7 +1998,7 @@ struct bist_data_b128 {
 #define TPD_EN		1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1333
+#ifdef CONFIG_RTS493xA_DDR_1333
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
 #define DRAM_SDR       0
@@ -2146,7 +2146,7 @@ struct bist_data_b128 {
 #define TPD_EN		1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1600
+#ifdef CONFIG_RTS493xA_DDR_1600
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
 #define DRAM_SDR       0
@@ -2300,7 +2300,7 @@ struct bist_data_b128 {
 #define TPD_EN		1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1866
+#ifdef CONFIG_RTS493xA_DDR_1866
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
 #define DRAM_SDR       0
@@ -2454,7 +2454,7 @@ struct bist_data_b128 {
 #define TPD_EN		1
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_2133
+#ifdef CONFIG_RTS493xA_DDR_2133
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
 #define DRAM_SDR       0
@@ -2611,319 +2611,6 @@ struct bist_data_b128 {
 #endif
 #endif
 
-/* ddr2-1333 setting */
-#ifdef DDR2_MCM
-
-#ifdef CONFIG_RTS493XA_QFN88_DDR2_512MBIT
-
-#define CONFIG_ODT_OFF
-#define DRAM_CHIP_NUM  1
-#define DRAM_TYPE      2
-#define DRAM_SDR       0
-#define DRAM_BANK_BIT  2
-#define DRAM_BST_LEN   8
-#define DRAM_PERIOD_PS 1500
-#define DFI_RATIO      0x02
-#define PCTL_PERIOD_PS (DRAM_PERIOD_PS * DFI_RATIO)
-
-#define DRAM_SIZE 0x3fffffff
-
-/*Refresh Command to Refresh command:160ns,
- *JESD79-3F-DDR3, page 170, table 61
- */
-#define DRAM_TRFC_PS 130000
-
-/*Serial Refresh Command Periodic Interval:60us,
- *DRAM_TREF_PS < TREF_NUM*(7.8us)*1000000
- */
-#define TREF_NUM     9
-#define DRAM_TREF_PS 15000000
-
-/*Read command to precharge delay cycles, max(4nCK, 7.5ns,
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TRTP_TCK 7
-
-/*Write Command to Percharge Command:15ns,
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TWR_PS 18000
-
-/*Active Command to Percharge Command:35ns,
- *JESD79-3F-DDR3, page 174, table 65
- */
-#define DRAM_TRAS_PS 47500
-
-/*Active Command to Active Command at Different Bank:max(4nCK,6ns),
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TRRD_TCK 7
-
-/*Percharge Command to Active Command:13.75ns,
- *JESD79-3F-DDR3, page 174, table 65
- */
-#define DRAM_TRP_PS 15000
-
-/*Read Command to Write Command:8,
- *large than(DRAM read latency + 6 - DRAM write latency)
- */
-#define DRAM_TRTW_TCK 6
-
-/*Write Command to Read Command:max(4nCK,7.5ns),
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TWTR_TCK 5
-
-/*Read/Write Command to Read/Write Command:4ns
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TCCD_TCK 2
-
-/*Active Command to Read/Write Command:13.75ns
- *JESD79-3F-DDR3, page 174, table 65
- */
-#define DRAM_TRCD_PS 15000
-
-/*Active Command to Active Command at Same Bank:48.75ns
- *JESD79-3F-DDR3, page 174, table 65
- */
-#define DRAM_TRC_PS 60000
-
-/* Active window:37.5ns
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TFAW_PS 45000
-
-/*Mode Register Command to The Next Valid Command:4
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TMRD_TCK 5
-
-/*write lantency: 6*/
-#define CWL 6
-
-/*read lantency:7*/
-#define CL 7
-
-/*additional lantency*/
-#define AL 0
-
-/*delay latency from DFI read command to
- *dfi_rddata_en signal. If it works on DDR,
- *the smallest value is 1
- */
-#define TPHY_RDATA_EN 1
-
-/*delay latency from dfi_wrdata_en signal
- *to dfi_wddata. If it works on DDR,
- *the smallest value is 1
- */
-#define TPHY_WDATA 1
-
-#define CAL_SETTING 0x04
-
-#ifdef CONFIG_DDR_POWER_GATING
-#define DRAM_TCKE_TCK 11
-#else
-#define DRAM_TCKE_TCK 3
-#endif
-
-#define DRAM_TRST_TUS_PS 200000000
-
-#define DRAM_TUS_PS 500000000
-
-#define DRAM_TPR2_TNS 1
-
-/*MR0*/
-#define TWR_AUTO_PRECHARGE 0x0
-#define MR0_VALUE	   (0x1073 | TWR_AUTO_PRECHARGE)
-
-/*IOCR & TIE_DPIN*/
-#ifdef CONFIG_ODT_OFF
-#define IOCR_VALUE                                     \
-	((TPHY_RDATA_EN << PCTL_IOCR_TPHY_RD_EN_BFO) | \
-	 (TPHY_WDATA << PCTL_IOCR_TPHY_WD_BFO) | 0x18)
-#define TIE_DPIN_VALUE 0x3
-#else
-#define IOCR_VALUE                                     \
-	((TPHY_RDATA_EN << PCTL_IOCR_TPHY_RD_EN_BFO) | \
-	 (TPHY_WDATA << PCTL_IOCR_TPHY_WD_BFO) | 0x10)
-#define TIE_DPIN_VALUE 0x3
-#endif
-
-/*MR2*/
-#define MR2_VALUE 0
-#ifdef CONFIG_ODT_OFF
-#define MR1_VALUE 0
-#else
-#define MR1_VALUE 0x44
-#endif
-
-#define MR_INFO_VALUE                                    \
-	((((DRAM_TRTP_TCK - 2) / DFI_RATIO + 1) << 25) | \
-	 ((DRAM_TWR_PS / PCTL_PERIOD_PS + 1) << 20) | 0x83)
-
-#define DDRC_SET_OFFSET 1
-#define TPR5_VALUE	0xb
-#define TPD_EN		1
-
-#else
-#ifdef CONFIG_RTS493XA_BGA173_DDR2_512MBIT
-
-#define CONFIG_ODT_OFF
-#define DRAM_CHIP_NUM  1
-#define DRAM_TYPE      2
-#define DRAM_SDR       0
-#define DRAM_BANK_BIT  2
-#define DRAM_BST_LEN   8
-#define DRAM_PERIOD_PS 1500
-#define DFI_RATIO      0x02
-#define PCTL_PERIOD_PS (DRAM_PERIOD_PS * DFI_RATIO)
-
-#define DRAM_SIZE     0x3fffffff
-
-/*Refresh Command to Refresh command:160ns,
- *JESD79-3F-DDR3, page 170, table 61
- */
-#define DRAM_TRFC_PS  130000
-
-/*Serial Refresh Command Periodic Interval:60us,
- *DRAM_TREF_PS < TREF_NUM*(7.8us)*1000000
- */
-#define TREF_NUM      9
-#define DRAM_TREF_PS  15000000
-
-/*Read command to precharge delay cycles, max(4nCK, 7.5ns,
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TRTP_TCK 7
-
-/*Write Command to Percharge Command:15ns,
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TWR_PS   15000
-
-/*Active Command to Percharge Command:35ns,
- *JESD79-3F-DDR3, page 174, table 65
- */
-#define DRAM_TRAS_PS  47500
-
-/*Active Command to Active Command at Different Bank:max(4nCK,6ns),
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TRRD_TCK 7
-
-/*Percharge Command to Active Command:13.75ns,
- *JESD79-3F-DDR3, page 174, table 65
- */
-#define DRAM_TRP_PS   15000
-
-/*Read Command to Write Command:8,
- *large than(DRAM read latency + 6 - DRAM write latency)
- */
-#define DRAM_TRTW_TCK 6
-
-/*Write Command to Read Command:max(4nCK,7.5ns),
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TWTR_TCK 5
-
-/*Read/Write Command to Read/Write Command:4ns
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TCCD_TCK 2
-
-/*Active Command to Read/Write Command:13.75ns
- *JESD79-3F-DDR3, page 174, table 65
- */
-#define DRAM_TRCD_PS  15000
-
-/*Active Command to Active Command at Same Bank:48.75ns
- *JESD79-3F-DDR3, page 174, table 65
- */
-#define DRAM_TRC_PS   60000
-
-/* Active window:37.5ns
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TFAW_PS  45000
-
-/*Mode Register Command to The Next Valid Command:4
- *JESD79-3F-DDR3, page 183, table 68
- */
-#define DRAM_TMRD_TCK 5
-
-/*write lantency: 6*/
-#define CWL	      6
-
-/*read lantency:7*/
-#define CL	      7
-
-/*additional lantency*/
-#define AL	      0
-
-/*delay latency from DFI read command to
- *dfi_rddata_en signal. If it works on DDR,
- *the smallest value is 1
- */
-#define TPHY_RDATA_EN 1
-
-/*delay latency from dfi_wrdata_en signal
- *to dfi_wddata. If it works on DDR,
- *the smallest value is 1
- */
-#define TPHY_WDATA    1
-
-#define CAL_SETTING 0x04
-
-#ifdef CONFIG_DDR_POWER_GATING
-#define DRAM_TCKE_TCK 11
-#else
-#define DRAM_TCKE_TCK 3
-#endif
-
-#define DRAM_TRST_TUS_PS 200000000
-
-#define DRAM_TUS_PS 500000000
-
-#define DRAM_TPR2_TNS	   1
-
-/*MR0*/
-#define TWR_AUTO_PRECHARGE 0x0
-#define MR0_VALUE	   (0x1073 | TWR_AUTO_PRECHARGE)
-
-/*IOCR & TIE_DPIN*/
-#ifdef CONFIG_ODT_OFF
-#define IOCR_VALUE                                     \
-	((TPHY_RDATA_EN << PCTL_IOCR_TPHY_RD_EN_BFO) | \
-	 (TPHY_WDATA << PCTL_IOCR_TPHY_WD_BFO) | 0x18)
-#define TIE_DPIN_VALUE 0x3
-#else
-#define IOCR_VALUE                                     \
-	((TPHY_RDATA_EN << PCTL_IOCR_TPHY_RD_EN_BFO) | \
-	 (TPHY_WDATA << PCTL_IOCR_TPHY_WD_BFO) | 0x10)
-#define TIE_DPIN_VALUE 0x3
-#endif
-
-/*MR2*/
-#define MR2_VALUE 0
-#ifdef CONFIG_ODT_OFF
-#define MR1_VALUE 0
-#else
-#define MR1_VALUE 0x44
-#endif
-
-#define MR_INFO_VALUE                                    \
-	((((DRAM_TRTP_TCK - 2) / DFI_RATIO + 1) << 25) | \
-	 ((DRAM_TWR_PS / PCTL_PERIOD_PS + 1) << 20) | 0x83)
-
-#define DDRC_SET_OFFSET 1
-#define TPR5_VALUE	0xb
-#define TPD_EN		1
-#endif
-#endif
-#endif
-
 #ifdef CONFIG_DDR_H5TQ2G_200M
 #define DRAM_CHIP_NUM  1
 #define DRAM_TYPE      3
@@ -3071,18 +2758,6 @@ struct bist_data_b128 {
 #define ROW_REMAP1_VALUE  0x88888888
 #define ROW_REMAP2_VALUE  0x00000008
 #define BANK_REMAP0_VALUE 0x00002928
-#define COLU_REMAP0_VALUE 0x0
-#define COLU_REMAP1_VALUE 0x000000ff
-#define RANK_REMAP0_VALUE 0x0000001f
-#define CH_REMAP0_VALUE	  0x0000001f
-#define BG_REMAP0_VALUE	  0x000003ff
-#endif
-
-#ifdef DDR2_MCM
-#define ROW_REMAP0_VALUE  0x77777777
-#define ROW_REMAP1_VALUE  0x77777777
-#define ROW_REMAP2_VALUE  0x00000007
-#define BANK_REMAP0_VALUE 0x00007d28
 #define COLU_REMAP0_VALUE 0x0
 #define COLU_REMAP1_VALUE 0x000000ff
 #define RANK_REMAP0_VALUE 0x0000001f
@@ -3282,9 +2957,6 @@ struct bist_data_b128 {
 #endif
 #ifdef DDR3_2GBIT_DEMOBOARD
 #define DDR_MODE 0x01
-#endif
-#ifdef DDR2_MCM
-#define DDR_MODE 0x03
 #endif
 #define DDR_MODE_MASK 0x00000003
 
@@ -4141,10 +3813,10 @@ struct bist_data_b128 {
 
 #ifdef DDR3_1GBIT_DEMOBOARD
 
-#ifdef CONFIG_RTS493XA_QFN88_DDR3_1GBIT
+#ifdef CONFIG_RTS493xA_QFN88_DDR3_1GBIT
 #define CONFIG_CLK_GATING
 
-#ifdef CONFIG_RTS493XA_DDR_2133
+#ifdef CONFIG_RTS493xA_DDR_2133
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x282727
 /*Fractional code of loop divider:[12:0]*/
@@ -4153,7 +3825,7 @@ struct bist_data_b128 {
 #define DDR_PHY_PLL_CTL3_VALUE 0x04c05577
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1866
+#ifdef CONFIG_RTS493xA_DDR_1866
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x282222
 
@@ -4163,7 +3835,7 @@ struct bist_data_b128 {
 #define DDR_PHY_PLL_CTL3_VALUE 0x02c05477
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1600
+#ifdef CONFIG_RTS493xA_DDR_1600
 
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281d1d
@@ -4174,7 +3846,7 @@ struct bist_data_b128 {
 #define DDR_PHY_PLL_CTL3_VALUE 0x02c05477
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1333
+#ifdef CONFIG_RTS493xA_DDR_1333
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281717
 
@@ -4184,7 +3856,7 @@ struct bist_data_b128 {
 #define DDR_PHY_PLL_CTL3_VALUE 0x00c05354
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1066
+#ifdef CONFIG_RTS493xA_DDR_1066
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281212
 
@@ -4364,7 +4036,7 @@ struct bist_data_b128 {
 
 #else
 
-#ifdef CONFIG_RTS493XA_DDR_1066
+#ifdef CONFIG_RTS493xA_DDR_1066
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281212
 
@@ -4543,7 +4215,7 @@ struct bist_data_b128 {
 
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1333
+#ifdef CONFIG_RTS493xA_DDR_1333
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281717
 
@@ -4722,7 +4394,7 @@ struct bist_data_b128 {
 
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1600
+#ifdef CONFIG_RTS493xA_DDR_1600
 
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281d1d
@@ -4901,7 +4573,7 @@ struct bist_data_b128 {
 #define ODT_CTRL	    TM_ODT_EN_ODD
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1866
+#ifdef CONFIG_RTS493xA_DDR_1866
 
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x282222
@@ -5080,7 +4752,7 @@ struct bist_data_b128 {
 #define ODT_CTRL	    TM_ODT_EN_ODD
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_2133
+#ifdef CONFIG_RTS493xA_DDR_2133
 
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x282727
@@ -5263,10 +4935,10 @@ struct bist_data_b128 {
 
 #ifdef DDR3_2GBIT_DEMOBOARD
 
-#ifdef CONFIG_RTS493XA_QFN88_DDR3_2GBIT
+#ifdef CONFIG_RTS493xA_QFN88_DDR3_2GBIT
 #define CONFIG_CLK_GATING
 
-#ifdef CONFIG_RTS493XA_DDR_2133
+#ifdef CONFIG_RTS493xA_DDR_2133
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x282727
 /*Fractional code of loop divider:[12:0]*/
@@ -5275,7 +4947,7 @@ struct bist_data_b128 {
 #define DDR_PHY_PLL_CTL3_VALUE 0x04c05577
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1866
+#ifdef CONFIG_RTS493xA_DDR_1866
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x282222
 
@@ -5285,7 +4957,7 @@ struct bist_data_b128 {
 #define DDR_PHY_PLL_CTL3_VALUE 0x02c05477
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1600
+#ifdef CONFIG_RTS493xA_DDR_1600
 
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281d1d
@@ -5296,7 +4968,7 @@ struct bist_data_b128 {
 #define DDR_PHY_PLL_CTL3_VALUE 0x02c05477
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1333
+#ifdef CONFIG_RTS493xA_DDR_1333
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281717
 
@@ -5306,7 +4978,7 @@ struct bist_data_b128 {
 #define DDR_PHY_PLL_CTL3_VALUE 0x00c05354
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1066
+#ifdef CONFIG_RTS493xA_DDR_1066
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281212
 
@@ -5486,7 +5158,7 @@ struct bist_data_b128 {
 
 #else
 
-#ifdef CONFIG_RTS493XA_DDR_1066
+#ifdef CONFIG_RTS493xA_DDR_1066
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281212
 
@@ -5665,7 +5337,7 @@ struct bist_data_b128 {
 
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1333
+#ifdef CONFIG_RTS493xA_DDR_1333
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281717
 
@@ -5844,7 +5516,7 @@ struct bist_data_b128 {
 
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1600
+#ifdef CONFIG_RTS493xA_DDR_1600
 
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x281d1d
@@ -6023,7 +5695,7 @@ struct bist_data_b128 {
 #define ODT_CTRL	    TM_ODT_EN_ODD
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_1866
+#ifdef CONFIG_RTS493xA_DDR_1866
 
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x282222
@@ -6202,7 +5874,7 @@ struct bist_data_b128 {
 #define ODT_CTRL	    TM_ODT_EN_ODD
 #endif
 
-#ifdef CONFIG_RTS493XA_DDR_2133
+#ifdef CONFIG_RTS493xA_DDR_2133
 
 /*Integer code of loop divider:[7:0]*/
 #define DPI_N_CODE 0x282727
@@ -6381,404 +6053,6 @@ struct bist_data_b128 {
 #define ODT_CTRL	    TM_ODT_EN_ODD
 #endif
 #endif
-#endif
-
-#ifdef DDR2_MCM
-#ifdef CONFIG_RTS493XA_QFN88_DDR2_512MBIT
-
-#ifdef CONFIG_RTS493XA_DDR_1200
-/*Integer code of loop divider:[7:0]*/
-#define DPI_N_CODE 0x281515
-
-/*Fractional code of loop divider:[12:0]*/
-#define DPI_F_CODE 0x0
-
-#define DDR_PHY_PLL_CTL3_VALUE 0x00c05355
-#endif
-
-#ifdef CONFIG_RTS493XA_DDR_1066
-/*Integer code of loop divider:[7:0]*/
-#define DPI_N_CODE 0x281212
-
-/*Fractional code of loop divider:[12:0]*/
-#define DPI_F_CODE 0x028f028f
-
-#define DDR_PHY_PLL_CTL3_VALUE 0x06405254
-#endif
-
-#ifdef CONFIG_RTS493XA_DDR_800
-/*Integer code of loop divider:[7:0]*/
-#define DPI_N_CODE 0x280d0d
-
-/*Fractional code of loop divider:[12:0]*/
-#define DPI_F_CODE 0
-
-#define DDR_PHY_PLL_CTL3_VALUE 0x04405154
-#endif
-
-#define DCC_CMD_VALUE  0x37
-#define DCC_DQS0_VALUE 0x37
-#define DCC_DQS1_VALUE 0x37
-#define DCC_DQS2_VALUE 0x37
-#define DCC_DQS3_VALUE 0x37
-#define DCC_DQ0_VALUE  0x37
-#define DCC_DQ1_VALUE  0x37
-#define DCC_DQ2_VALUE  0x37
-#define DCC_DQ3_VALUE  0x37
-#define DCC_CK_VALUE   0x37
-#define DCC_CS_VALUE   0x37
-#define DCC_CS1_VALUE  0x37
-
-#define CLK_PI	0x12
-#define CMD_PI	0
-#define DQS0_PI 0x14
-#define DQS1_PI 0x14
-#define DQS2_PI 0x00
-#define DQS3_PI 0x00
-#define POST_PI 0
-#define CS0_PI	0x16
-#define CS1_PI	0x00
-#define DQ_PI	0x1c
-
-#define CLK_OESYNC  0x1
-#define DQS0_OESYNC 1
-#define DQS1_OESYNC 1
-#define DQS2_OESYNC 0
-#define DQS3_OESYNC 0
-#define DQ_OESYNC   0x1
-#define CS0_OESYNC  0x1
-#define CS1_OESYNC  0x0
-
-#define CMD_RD_STR_NUM	     0x04
-#define CMD_RXT_RD_STR_NUM   0x03
-#define CMD_RD_STR_NUM_SEL_H 0x00
-#define CMD_RD_STR_NUM_SEL   0x14000000
-
-#define RX_RD_STR_NUM	      0x03
-#define DDR_PHY_CRT_CTL_VALUE DDR_PHY_CRT_CTL_DEF
-
-#define AFIFO_STR_0_VALUE 0x33333333
-
-#define DDR_PHY_PLL_CTL0_VALUE 0x1fff1fff
-
-#define CMD_ADR_PH_OPTION CMD_ADR_PH_EN
-#define CMD_ADR_PH_SEL	  1
-
-#define VREF_MODE VREF_DDR3_MODE
-
-/*odt = 240ohm, odt = 34ohm*/
-#define PAD_CTRL_ZPROG0_VALUE 0x0014011e
-
-/*odt = 320ohm, odt = 45ohm*/
-#define PAD_NOCD2_ZPROG0_VALUE 0x11e
-
-/*odt = 240ohm, odt = 34ohm*/
-#define PAD_CTRL_ZPROG1_VALUE 0x00100114
-
-/*odt = 320ohm, odt = 45ohm*/
-#define PAD_NOCD2_ZPROG1_VALUE 0x114
-
-/*odt = 240ohm, odt = 34ohm*/
-#define PAD_CTRL_ZPROG2_VALUE 0x000a0114
-
-/*odt = 320ohm, odt = 45ohm*/
-#define PAD_NOCD2_ZPROG2_VALUE 0x114
-
-#define DQ_ODT_SEL_VALUE 0x00000000
-#define DQ_OCD_SEL_VALUE 0x00001111
-
-#define DQS_EN_DLY	    0x01
-#define DQS_RC1IN_DLY_SEL_0 0x0
-#define DQS_RC1IN_DLY_SEL_1 0x0
-#define DQS_RC1IN_DLY_SEL_2 0x0
-#define DQS_RC1IN_DLY_SEL_3 0x0
-
-#define RX_FIFO_DLY 0x03
-
-#ifdef RXSETTING_PER_BYTE
-#define RX_DQ0_P_DLY  0x14
-#define RX_DQ0_N_DLY  0x14
-#define RX_DQ8_P_DLY  0x14
-#define RX_DQ8_N_DLY  0x14
-#define RX_DQ16_P_DLY 0x14
-#define RX_DQ16_N_DLY 0x14
-#define RX_DQ24_P_DLY 0x14
-#define RX_DQ24_N_DLY 0x14
-#else
-#define RX_DQ0_P_DLY 0x0d
-#define RX_DQ1_P_DLY 0x0d
-#define RX_DQ2_P_DLY 0x0d
-#define RX_DQ3_P_DLY 0x0d
-#define RX_DQ4_P_DLY 0x0d
-#define RX_DQ5_P_DLY 0x0d
-#define RX_DQ6_P_DLY 0x0d
-#define RX_DQ7_P_DLY 0x0d
-
-#define RX_DQ8_P_DLY  0x0d
-#define RX_DQ9_P_DLY  0x0d
-#define RX_DQ10_P_DLY 0x0d
-#define RX_DQ11_P_DLY 0x0d
-#define RX_DQ12_P_DLY 0x0d
-#define RX_DQ13_P_DLY 0x0d
-#define RX_DQ14_P_DLY 0x0d
-#define RX_DQ15_P_DLY 0x0d
-
-#define RX_DQ16_P_DLY 0x09
-#define RX_DQ17_P_DLY 0x09
-#define RX_DQ18_P_DLY 0x09
-#define RX_DQ19_P_DLY 0x09
-#define RX_DQ20_P_DLY 0x09
-#define RX_DQ21_P_DLY 0x09
-#define RX_DQ22_P_DLY 0x09
-#define RX_DQ23_P_DLY 0x09
-
-#define RX_DQ24_P_DLY 0x09
-#define RX_DQ25_P_DLY 0x09
-#define RX_DQ26_P_DLY 0x09
-#define RX_DQ27_P_DLY 0x09
-#define RX_DQ28_P_DLY 0x09
-#define RX_DQ29_P_DLY 0x09
-#define RX_DQ30_P_DLY 0x09
-#define RX_DQ31_P_DLY 0x09
-
-#define RX_DQ0_N_DLY 0x0d
-#define RX_DQ1_N_DLY 0x0d
-#define RX_DQ2_N_DLY 0x0d
-#define RX_DQ3_N_DLY 0x0d
-#define RX_DQ4_N_DLY 0x0d
-#define RX_DQ5_N_DLY 0x0d
-#define RX_DQ6_N_DLY 0x0d
-#define RX_DQ7_N_DLY 0x0d
-
-#define RX_DQ8_N_DLY  0x0d
-#define RX_DQ9_N_DLY  0x0d
-#define RX_DQ10_N_DLY 0x0d
-#define RX_DQ11_N_DLY 0x0d
-#define RX_DQ12_N_DLY 0x0d
-#define RX_DQ13_N_DLY 0x0d
-#define RX_DQ14_N_DLY 0x0d
-#define RX_DQ15_N_DLY 0x0d
-
-#define RX_DQ16_N_DLY 0x09
-#define RX_DQ17_N_DLY 0x09
-#define RX_DQ18_N_DLY 0x09
-#define RX_DQ19_N_DLY 0x09
-#define RX_DQ20_N_DLY 0x09
-#define RX_DQ21_N_DLY 0x09
-#define RX_DQ22_N_DLY 0x09
-#define RX_DQ23_N_DLY 0x09
-
-#define RX_DQ24_N_DLY 0x09
-#define RX_DQ25_N_DLY 0x09
-#define RX_DQ26_N_DLY 0x09
-#define RX_DQ27_N_DLY 0x09
-#define RX_DQ28_N_DLY 0x09
-#define RX_DQ29_N_DLY 0x09
-#define RX_DQ30_N_DLY 0x09
-#define RX_DQ31_N_DLY 0x09
-#endif
-
-#define DQS0_READ_ODT_RANGE 0xff
-#define DQS1_READ_ODT_RANGE 0xff
-#define DQS2_READ_ODT_RANGE 0xff
-#define DQS3_READ_ODT_RANGE 0xff
-#define ODT_CTRL	    TM_ODT_EN_ODD
-
-#else
-#ifdef CONFIG_RTS493XA_BGA173_DDR2_512MBIT
-
-#ifdef CONFIG_RTS493XA_DDR_1066
-/*Integer code of loop divider:[7:0]*/
-#define DPI_N_CODE 0x281212
-
-/*Fractional code of loop divider:[12:0]*/
-#define DPI_F_CODE 0x028f028f
-
-#define DDR_PHY_PLL_CTL3_VALUE 0x06405254
-#endif
-
-#ifdef CONFIG_RTS493XA_DDR_800
-/*Integer code of loop divider:[7:0]*/
-#define DPI_N_CODE 0x280d0d
-
-/*Fractional code of loop divider:[12:0]*/
-#define DPI_F_CODE 0
-
-#define DDR_PHY_PLL_CTL3_VALUE 0x04405154
-#endif
-
-#define DCC_CMD_VALUE  0x37
-#define DCC_DQS0_VALUE 0x37
-#define DCC_DQS1_VALUE 0x37
-#define DCC_DQS2_VALUE 0x37
-#define DCC_DQS3_VALUE 0x37
-#define DCC_DQ0_VALUE  0x37
-#define DCC_DQ1_VALUE  0x37
-#define DCC_DQ2_VALUE  0x37
-#define DCC_DQ3_VALUE  0x37
-#define DCC_CK_VALUE   0x37
-#define DCC_CS_VALUE   0x37
-#define DCC_CS1_VALUE  0x37
-
-#define CLK_PI	0x14
-#define CMD_PI	0
-#define DQS0_PI 0x15
-#define DQS1_PI 0x15
-#define DQS2_PI 0x00
-#define DQS3_PI 0x00
-#define POST_PI 0
-#define CS0_PI	0x19
-#define CS1_PI	0x00
-#define DQ_PI	0x1c
-
-#define CLK_OESYNC  0x1
-#define DQS0_OESYNC 1
-#define DQS1_OESYNC 1
-#define DQS2_OESYNC 0
-#define DQS3_OESYNC 0
-#define DQ_OESYNC   0x1
-#define CS0_OESYNC  0x1
-#define CS1_OESYNC  0x0
-
-#define CMD_RD_STR_NUM	     0x04
-#define CMD_RXT_RD_STR_NUM   0x03
-#define CMD_RD_STR_NUM_SEL_H 0x00
-#define CMD_RD_STR_NUM_SEL   0x14000000
-
-#define RX_RD_STR_NUM	      0x03
-#define DDR_PHY_CRT_CTL_VALUE DDR_PHY_CRT_CTL_DEF
-
-#define AFIFO_STR_0_VALUE 0x33333333
-
-#define DDR_PHY_PLL_CTL0_VALUE 0x1fff1fff
-
-#define CMD_ADR_PH_OPTION CMD_ADR_PH_EN
-#define CMD_ADR_PH_SEL	  1
-
-#define VREF_MODE	       VREF_DDR3_MODE
-
-/*odt = 240ohm, odt = 34ohm*/
-#define PAD_CTRL_ZPROG0_VALUE  0x0014011e
-
-/*odt = 320ohm, odt = 45ohm*/
-#define PAD_NOCD2_ZPROG0_VALUE 0x11e
-
-/*odt = 240ohm, odt = 34ohm*/
-#define PAD_CTRL_ZPROG1_VALUE  0x00100114
-
-/*odt = 320ohm, odt = 45ohm*/
-#define PAD_NOCD2_ZPROG1_VALUE 0x114
-
-/*odt = 240ohm, odt = 34ohm*/
-#define PAD_CTRL_ZPROG2_VALUE  0x000a0114
-
-/*odt = 320ohm, odt = 45ohm*/
-#define PAD_NOCD2_ZPROG2_VALUE 0x114
-
-#define DQ_ODT_SEL_VALUE 0x00000000
-#define DQ_OCD_SEL_VALUE 0x00001111
-
-#define DQS_EN_DLY	    0x01
-#define DQS_RC1IN_DLY_SEL_0 0x0
-#define DQS_RC1IN_DLY_SEL_1 0x0
-#define DQS_RC1IN_DLY_SEL_2 0x0
-#define DQS_RC1IN_DLY_SEL_3 0x0
-
-#define RX_FIFO_DLY 0x03
-
-#ifdef RXSETTING_PER_BYTE
-#define RX_DQ0_P_DLY  0x14
-#define RX_DQ0_N_DLY  0x14
-#define RX_DQ8_P_DLY  0x14
-#define RX_DQ8_N_DLY  0x14
-#define RX_DQ16_P_DLY 0x14
-#define RX_DQ16_N_DLY 0x14
-#define RX_DQ24_P_DLY 0x14
-#define RX_DQ24_N_DLY 0x14
-#else
-#define RX_DQ0_P_DLY 0x0d
-#define RX_DQ1_P_DLY 0x0d
-#define RX_DQ2_P_DLY 0x0d
-#define RX_DQ3_P_DLY 0x0d
-#define RX_DQ4_P_DLY 0x0d
-#define RX_DQ5_P_DLY 0x0d
-#define RX_DQ6_P_DLY 0x0d
-#define RX_DQ7_P_DLY 0x0d
-
-#define RX_DQ8_P_DLY  0x0d
-#define RX_DQ9_P_DLY  0x0d
-#define RX_DQ10_P_DLY 0x0d
-#define RX_DQ11_P_DLY 0x0d
-#define RX_DQ12_P_DLY 0x0d
-#define RX_DQ13_P_DLY 0x0d
-#define RX_DQ14_P_DLY 0x0d
-#define RX_DQ15_P_DLY 0x0d
-
-#define RX_DQ16_P_DLY 0x09
-#define RX_DQ17_P_DLY 0x09
-#define RX_DQ18_P_DLY 0x09
-#define RX_DQ19_P_DLY 0x09
-#define RX_DQ20_P_DLY 0x09
-#define RX_DQ21_P_DLY 0x09
-#define RX_DQ22_P_DLY 0x09
-#define RX_DQ23_P_DLY 0x09
-
-#define RX_DQ24_P_DLY 0x09
-#define RX_DQ25_P_DLY 0x09
-#define RX_DQ26_P_DLY 0x09
-#define RX_DQ27_P_DLY 0x09
-#define RX_DQ28_P_DLY 0x09
-#define RX_DQ29_P_DLY 0x09
-#define RX_DQ30_P_DLY 0x09
-#define RX_DQ31_P_DLY 0x09
-
-#define RX_DQ0_N_DLY 0x0d
-#define RX_DQ1_N_DLY 0x0d
-#define RX_DQ2_N_DLY 0x0d
-#define RX_DQ3_N_DLY 0x0d
-#define RX_DQ4_N_DLY 0x0d
-#define RX_DQ5_N_DLY 0x0d
-#define RX_DQ6_N_DLY 0x0d
-#define RX_DQ7_N_DLY 0x0d
-
-#define RX_DQ8_N_DLY  0x0d
-#define RX_DQ9_N_DLY  0x0d
-#define RX_DQ10_N_DLY 0x0d
-#define RX_DQ11_N_DLY 0x0d
-#define RX_DQ12_N_DLY 0x0d
-#define RX_DQ13_N_DLY 0x0d
-#define RX_DQ14_N_DLY 0x0d
-#define RX_DQ15_N_DLY 0x0d
-
-#define RX_DQ16_N_DLY 0x09
-#define RX_DQ17_N_DLY 0x09
-#define RX_DQ18_N_DLY 0x09
-#define RX_DQ19_N_DLY 0x09
-#define RX_DQ20_N_DLY 0x09
-#define RX_DQ21_N_DLY 0x09
-#define RX_DQ22_N_DLY 0x09
-#define RX_DQ23_N_DLY 0x09
-
-#define RX_DQ24_N_DLY 0x09
-#define RX_DQ25_N_DLY 0x09
-#define RX_DQ26_N_DLY 0x09
-#define RX_DQ27_N_DLY 0x09
-#define RX_DQ28_N_DLY 0x09
-#define RX_DQ29_N_DLY 0x09
-#define RX_DQ30_N_DLY 0x09
-#define RX_DQ31_N_DLY 0x09
-#endif
-
-#define DQS0_READ_ODT_RANGE 0x3c
-#define DQS1_READ_ODT_RANGE 0x3c
-#define DQS2_READ_ODT_RANGE 0x3c
-#define DQS3_READ_ODT_RANGE 0x3c
-#define ODT_CTRL	    TM_ODT_EN_ODD
-
-#endif
-
-#endif
-
 #endif
 
 #define DDR_PHY_PLL_PI0_VALUE \
