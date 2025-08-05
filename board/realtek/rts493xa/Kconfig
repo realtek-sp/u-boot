@@ -59,3 +59,62 @@ config RTS493xA_DDR_2133
 	  Select ddr dqs clock to 2133/2
 
 endchoice
+
+choice
+	prompt "Boot Mode Selection"
+	default RTS493XA_BOOT_NORMAL
+	help
+	  Select the boot mode for the RTS493xA series. This choice determines
+	  how the system initializes and what security measures are in place
+	  during the boot process. Choose the mode that best fits your
+	  environment and security requirements.
+
+config RTS493XA_BOOT_NORMAL
+	bool "Boot mode normal"
+	help
+	  Select this option to boot the system in normal mode. In this mode,
+	  the system will initialize without additional security checks. This
+	  mode is suitable for development and testing environments where
+	  security is not a primary concern.
+
+config RTS493XA_BOOT_SECURE
+	bool "Boot mode secure"
+	select FIT_SIGNATURE
+	help
+	  Select this option to boot the system in secure mode. In this mode,
+	  additional security measures are enforced during the boot process,
+	  such as verifying the integrity of the bootloader and kernel images.
+	  This mode is recommended for production environments where security
+	  is critical to prevent unauthorized access and ensure system integrity.
+
+config RTS493XA_BOOT_CRYPTO
+	bool "Boot mode crypto"
+	select CRYPTO_BOOT
+	select CBC_MODE
+	select AES_256
+	help
+	  Select this option to boot the system in crypto mode. This mode
+	  provides enhanced security by incorporating cryptographic checks
+	  during the boot process. It ensures that all boot components are
+	  authenticated and have not been tampered with. This mode is ideal
+	  for environments that require high levels of security and data
+	  protection.
+
+config RTS493XA_BOOT_SECURE_CRYPTO
+	bool "Boot mode secure and crypto"
+	select FIT_SIGNATURE
+	select CRYPTO_BOOT
+	select CBC_MODE
+	select AES_256
+	help
+	  Select this option to boot the system with both secure and crypto
+	  modes enabled. This configuration enforces the highest level of
+	  security by combining the features of both secure and crypto modes.
+	  During the boot process, the system will perform comprehensive
+	  security checks, including verifying the integrity and authenticity
+	  of the bootloader and kernel images using cryptographic methods.
+	  This mode is ideal for environments that demand maximum security
+	  and data protection, ensuring that all boot components are
+	  authenticated and protected against unauthorized modifications.
+
+endchoice

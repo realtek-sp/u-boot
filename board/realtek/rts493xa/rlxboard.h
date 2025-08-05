@@ -137,6 +137,14 @@ EF:                    \
 /* ATF_BOOT NOR_BASE 0x04000000 NAND_BASE 0x02000000 */
 /* UBOOT_AS_BL33 OFFSET 0x128, UBOOT_AS_BL2 OFFSET 0X88 */
 
+#if !defined(CONFIG_RTS493XA_BOOT_NORMAL)
+    #if defined(CONFIG_RTS_NAND_BOOT)
+        #define NAND_BOOT_FIP
+    #elif defined(CONFIG_RTS_NOR_BOOT)
+        #define NOR_BOOT_FIP
+    #endif
+#endif
+
 #ifdef NAND_BOOT_FIP
 #ifdef UBOOT_AS_BL33
 #define CONFIG_SYS_FLASH_BASE 0x02000128
