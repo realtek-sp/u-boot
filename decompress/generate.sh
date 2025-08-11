@@ -15,7 +15,7 @@ echo "ram version filesize is $filesize"
 decompress_function_size=0x6000
 decompress_function_base=0x82800000
 touch decompress_lzma.c
-make RAM_VERSION_SIZE_COMP=$filesize \
+$MAKE RAM_VERSION_SIZE_COMP=$filesize \
 	DELZMA_FUNC_SIZE=$decompress_function_size \
 	DELZMA_FUNC_BASE=$decompress_function_base
 

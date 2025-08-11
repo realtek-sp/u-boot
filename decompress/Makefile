@@ -40,7 +40,7 @@ CFLAGS := -Os -ffunction-sections -fdata-sections -D__KERNEL__ \
 	-fno-pic -mno-unaligned-access -ffunction-sections -fdata-sections \
 	-fno-common -ffixed-r9 -msoft-float -pipe -march=armv7-a \
 	-D__LINUX_ARM_ARCH__=7 -mtune=generic-armv7-a \
-	-fPIC -EL -Wstrict-prototypes
+	-fPIC -Wstrict-prototypes
 
 ASFLAGS := $(CFLAGS) -D__ASSEMBLY__
 

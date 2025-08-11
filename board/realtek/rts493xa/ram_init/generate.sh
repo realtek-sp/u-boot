@@ -10,13 +10,13 @@ echo "compressed u-boot filesize is $filesize"
 initsize=0x4000
 
 touch init.S spi_nand.S
-make -f makefile_raminit RAM_VERSION_SIZE=$filesize \
+$MAKE -f makefile_raminit RAM_VERSION_SIZE=$filesize \
 FLASH_VERSION_SIZE=$initsize DECOMPRESS=$do_decompress
 
 raminitsize=`stat -c %s init.bin`
 echo " u-boot 2nd stage size is $raminitsize"
 
-make -f makefile_boot BOOT_SIZE=2048 RAMINIT_SIZE=$raminitsize
+$MAKE -f makefile_boot BOOT_SIZE=2048 RAMINIT_SIZE=$raminitsize
 
 dd bs=1 count=$raminitsize if=init.bin of=sysboot.bin skip=0 seek=2048
 mv sysboot.bin init.bin
@@ -46,11 +46,11 @@ if [ "$filesize" -gt "$file_limit" ];then
 echo "uboot exceed maximum size"
 exit 1
 fi
-make -f makefile_raminit RAM_VERSION_SIZE=$filesize SYSTEM_INIT_SIZE=$initsize
+$MAKE -f makefile_raminit RAM_VERSION_SIZE=$filesize SYSTEM_INIT_SIZE=$initsize
 raminitsize=`stat -c %s init.bin`
 echo " u-boot 2nd stage size is $raminitsize"
 
-make -f makefile_boot BOOT_SIZE=2048 RAMINIT_SIZE=$raminitsize
+$MAKE -f makefile_boot BOOT_SIZE=2048 RAMINIT_SIZE=$raminitsize
 dd bs=1 count=$raminitsize if=init.bin of=sysboot.bin skip=0 seek=2048
 
 mv sysboot.bin init.bin
