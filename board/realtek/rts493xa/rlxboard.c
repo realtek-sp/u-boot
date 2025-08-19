@@ -33,16 +33,6 @@ void write_mask(u32 reg, u32 bit, u32 mask)
 	set_val(reg, (temp & (~mask)) | bit);
 }
 
-void reset_cpu(void)
-{
-	/* set watchdog */
-	/* watchdog time: 1s, reset system when timeout, enable watchdog */
-	writel(WATCH_DOG_CFG_DATA, (u32 *)WATCHDOG_CFG_REG);
-	printf("set watchdog, resetting...");
-	while (1)
-		;
-}
-
 void set_boot_left_reg_when_press_key(void)
 {
 	int a_left = 0;

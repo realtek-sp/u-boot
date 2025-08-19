@@ -68,3 +68,6 @@
 	status = "okay";
 };
 
+&watchdog {
+	status = "okay";
+};

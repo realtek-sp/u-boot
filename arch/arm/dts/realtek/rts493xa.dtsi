@@ -103,6 +103,12 @@
 			status = "disabled";
 		};
 
+		watchdog: watchdog@188da000 {
+			compatible = "realtek,rts493xa-wdt";
+			reg = <0x188da000 0x10000>;
+			status = "disabled";
+		};
+
 		spi0: spic@18030000 {
 			compatible = "realtek,rts493xa-quadspi";
 			#address-cells = <1>;

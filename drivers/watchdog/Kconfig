@@ -351,6 +351,14 @@ config WDT_TANGIER
 	  Intel Tangier SoC. If you're using a board with Intel Tangier
 	  SoC, say Y here.
 
+config WDT_RTS493XA
+	bool "RTS493xA watchdog timer support"
+	depends on WDT
+	help
+	  This enables support for watchdog controller available on
+	  Realtek RTS493xA SoC. If you're using a board with Realtek RTS493xA
+	  SoC, say Y here.
+
 config SPL_WDT
 	bool "Enable driver model for watchdog timer drivers in SPL"
 	depends on SPL_DM
