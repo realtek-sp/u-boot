@@ -101,4 +101,6 @@ SECTIONS
 	.interp : { *(.interp*) }
 	.gnu : { *(.gnu*) }
 	.ARM.exidx : { *(.ARM.exidx*) }
+
+	. = ALIGN(4);
 }

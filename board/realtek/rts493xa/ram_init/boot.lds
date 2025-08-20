@@ -119,4 +119,6 @@ SECTIONS
 	.gnu : { *(.gnu*) }
 	.ARM.exidx : { *(.ARM.exidx*) }
 	.gnu.linkonce.armexidx : { *(.gnu.linkonce.armexidx.*) }
+
+	. = ALIGN(4);
 }

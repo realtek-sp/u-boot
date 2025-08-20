@@ -24,3 +24,14 @@ dd bs=1 count=$filesize if=u-boot.bin.lzma of=decompress.bin skip=0 seek=24576
 #cp decompress.bin ../../../image/
 
 #./merge.sh
+outsz=$(stat -c '%s' decompress.bin)
+pad=$(( (4 - outsz % 4) % 4 ))
+
+if [ "$pad" -gt 0 ]; then
+  dd if=/dev/zero bs=1 count="$pad" 2>/dev/null \
+    | tr '\0' '\377' >> decompress.bin
+  echo "Appended $pad bytes of 0xFF to '$file' (now 4-byte aligned)."
+else
+  echo "'$file' is already 4-byte aligned."
+fi
+
