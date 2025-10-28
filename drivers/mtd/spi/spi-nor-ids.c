@@ -170,6 +170,13 @@ const struct flash_info spi_nor_ids[] = {
 			SPI_NOR_WR_QUAD_II, SR_CFG, 8), SPI_NOR_4BIT_BP,
 			{0x4466, 0x8499, 0x0000}
 	},
+	{
+		INFO("MX66l2g45g", 0xc2201c, 0, 64 * 1024, 4096,
+			SECT_4K | SPI_NOR_QUAD_READ |
+			SPI_NOR_4B_OPCODES, SR_CFG, 8),
+			SPI_NOR_4BIT_BP,
+			{0x4466, 0x8499, 0x0000}
+	},
 #endif
 #ifdef CONFIG_SPI_FLASH_WINBOND		/* WINBOND */
 	{
@@ -441,6 +448,12 @@ const struct flash_info spi_nor_ids[] = {
 	{
 		INFO("MX25L1G45G", 0xc2201b, 0, 64 * 1024, 2048,
 			SPI_NOR_DUAL_READ | SPI_NOR_4B_OPCODES,
+			SR_CFG, 8), SPI_NOR_4BIT_BP,
+			{0x4466, 0x8499, 0x0000}
+	},
+	{
+		INFO("MX66l2g45g", 0xc2201c, 0, 64 * 1024, 4096,
+			SECT_4K | SPI_NOR_DUAL_READ | SPI_NOR_4B_OPCODES,
 			SR_CFG, 8), SPI_NOR_4BIT_BP,
 			{0x4466, 0x8499, 0x0000}
 	},
