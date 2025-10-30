@@ -1340,7 +1340,8 @@ dtb-$(CONFIG_ARCH_QEMU) += qemu-arm.dtb qemu-arm64.dtb
 dtb-$(CONFIG_TARGET_CORSTONE1000) += corstone1000-mps3.dtb \
 				corstone1000-fvp.dtb
 
-dtb-$(CONFIG_BOARD_RTS493xA) += realtek/rts4930a-evb.dtb
+dtb-$(CONFIG_BOARD_RTS493xA) += realtek/rts493xa-evb.dtb \
+				realtek/rts493xa-escm.dtb
 
 include $(srctree)/scripts/Makefile.dts
 
