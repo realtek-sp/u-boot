@@ -408,33 +408,6 @@ static int _do_write_all_(u32 all_len)
 	return ret;
 }
 
-static int do_update_all(const char *dfu)
-{
-	int ret = 0;
-	u32 all_len = 0;
-
-#ifdef CONFIG_CMD_DFU
-	if (strcmp(dfu, "dfu") == 0) {
-		char *argv[4] = {"dfu", "0", "ram", "0"};
-		char **p = argv;
-
-		ret = do_dfu(NULL, 0, 4, p);
-		if (ret)
-			return CMD_RET_FAILURE;
-		all_len = dfu_all_len;
-		dfu_all_len = 0;
-	} else
-#endif
-		all_len = _do_get_file_("/linux.bin");
-
-	if (all_len == 0)
-		return CMD_RET_FAILURE;
-
-	ret = _do_write_all_(all_len);
-
-	return ret;
-}
-
 static int do_update(struct cmd_tbl  *cmdtp, int flag, int argc,
 			char * const argv[])
 {
@@ -468,11 +441,6 @@ static int do_update(struct cmd_tbl  *cmdtp, int flag, int argc,
 		goto done;
 	}
 #endif
-
-	if (strcmp(cmd, "all") == 0) {
-		ret = do_update_all(dfu_argv);
-		goto done;
-	}
 
 done:
 	if (ret == CMD_RET_SUCCESS)
@@ -689,7 +657,6 @@ U_BOOT_CMD(
 	"uboot	- get uboot.bin by tftp and write to flash\n"
 	"update kernel	- get kernel image by tftp and write to flash\n"
 	"update rootfs	- get rootfs by tftp and write to flash\n"
-	"update all	- get all image by tftp , parse it and  write to flash\n"
 	UPDATE_TEST_HELP
 );
 #endif
