@@ -21,39 +21,20 @@
  * See included "fw_env.config" sample file
  * for notes on configuration.
  */
-// #define CONFIG_FILE     "/etc/fw_env.config"
+#define CONFIG_FILE "/etc/fw_env.config"
 
 #ifndef CONFIG_FILE
-#include <configs/rlxboard.h>
-#ifdef CONFIG_RTS_EMMC_BOOT
-#define DEVICE1_NAME      "/dev/mmcblk0boot0"
-#else
-#define DEVICE1_NAME      "/dev/mtd0"
-#endif
-#define DEVICE1_OFFSET    CONFIG_ENV_OFFSET
-#define ENV1_SIZE         CONFIG_ENV_SIZE
-#ifdef CONFIG_ENV_IS_IN_SPI_FLASH
-#define DEVICE1_ESIZE     CONFIG_ENV_SECT_SIZE
-#else
-#define DEVICE1_ESIZE     0x20000
-#endif
-//#define DEVICE1_ENVSECTORS     2
-#ifdef CONFIG_SYS_REDUNDAND_ENVIRONMENT
-#define HAVE_REDUND /* For systems with 2 env sectors */
-#ifdef CONFIG_RTS_EMMC_BOOT
-#define DEVICE2_NAME      "/dev/mmcblk0boot0"
-#else
-#define DEVICE2_NAME      "/dev/mtd0"
-#endif
-#define DEVICE2_OFFSET    CONFIG_ENV_OFFSET_REDUND
-#define ENV2_SIZE         CONFIG_ENV_SIZE
-#ifdef CONFIG_ENV_IS_IN_SPI_FLASH
-#define DEVICE2_ESIZE     CONFIG_ENV_SECT_SIZE
-#else
-#define DEVICE2_ESIZE     0x20000
-#endif
-//#define DEVICE2_ENVSECTORS     2
-#endif
+#define HAVE_REDUND	   /* For systems with 2 env sectors */
+#define DEVICE1_NAME	   "/dev/mtd1"
+#define DEVICE2_NAME	   "/dev/mtd2"
+#define DEVICE1_OFFSET	   0x0000
+#define ENV1_SIZE	   0x4000
+#define DEVICE1_ESIZE	   0x4000
+#define DEVICE1_ENVSECTORS 2
+#define DEVICE2_OFFSET	   0x0000
+#define ENV2_SIZE	   0x4000
+#define DEVICE2_ESIZE	   0x4000
+#define DEVICE2_ENVSECTORS 2
 #endif
 
 #ifndef CONFIG_BAUDRATE

@@ -1716,7 +1716,6 @@ static int check_device_config(int dev)
 	return rc;
 }
 
-#if defined(CONFIG_FILE)
 static int find_nvmem_device(void)
 {
 	const char *path = "/sys/bus/nvmem/devices";
@@ -1777,7 +1776,6 @@ static int find_nvmem_device(void)
 
 	return -ENOENT;
 }
-#endif
 
 static int parse_config(struct env_opts *opts)
 {
